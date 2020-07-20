@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>RSS H5 reader by PPk</title>
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="MTcmGJ7Gyz0UvAQ5ZCXbLeviCoIuy8mnY8Lce/luo8MpKMUA1XzEzlVuwaY/8uyBTOjk2rYekbEH8k3R/i128g==" />
+<link rel="stylesheet" media="all" href="https://static.codepen.io/assets/embed/embed-e9af4a5b1b844a30527ae8cb861d180ac1ab94b693ef8c328e530e4930ec3564.css" />
+<style>
+.hide {
+  display: none !important;
+}
+
+.embed-footer,
+.embed-nav {
+  background: #28282a;
+  
+}
+.embed-nav .code-types a,
+.embed-nav .result-button-list a,
+.action-button {
+  color: #ffffff;
+  background-color: #424242;
+}
+.embed-nav .code-types a.active,
+.embed-nav .result-button-list a.active,
+.action-button.active {
+  background: #212121;
+  color: #ffffff;
+  box-shadow: inset 0px 3px #ff8a00;
+}
+.embed-nav .logo-wrap a {
+  color: #a9a9a9;
+}
+
+.embed-nav svg {
+  stroke: #a9a9a9 !important;
+}
+
+a{text-decoration:none}
+
+.channel_link {
+  font-size:12px;
+  color:#fff;
+
+}
+</style>
+<link rel="stylesheet" media="all" href="https://static.codepen.io/assets/editor/themes/highcontrast-dark-6fac7534892153b41a69be61dcfbd27dacbe6f3359e73912fea94614a283be8e.css" />
+<link rel="stylesheet" href="https://codepen.io/chriscoyier/pen/maVRwd.css">
+</head>
+<body id="the-body" style="border: 1px solid #39231b; --borderWidth: 1px;" class="codepen-embed-body  static">
+<nav class="embed-nav group" id="embed-nav">
+
+<ul class="code-types">
+
+<!--
+<li class="code-type">
+<a id="css-link" href="#css-box" aria-pressed="false" role="button">
+SCSS
+</a>
+</li>
+-->
+
+<li class="code-type">
+<a id="js-link" href="#js-box" aria-pressed="false" role="button">
+我的频道
+</a>
+</li>
+
+</ul>
+
+<ul class="result-button-list">
+<li class="results results-type">
+<a id="result-link" href="#result-box" class="active" aria-pressed="true" role="button">
+正读 <span id="current_channel_label"></span>
+</a>
+</li>
+</ul>
+<div class="logo-wrap" id="edit-area">
+<a class="large-logo edit-on-codepen" target="_blank" rel="noopener" href="https://ppkpub.org" title="PPkPub">
+<span id="edit-on-text" class="open-on">Powered by</span>
+<img src="https://ppkpub.org/images/logo.png" height="30">
+</a>
+<a class="box-logo edit-on-codepen" target="_blank" rel="noopener" href="https://ppkpub.org" title="PPk">
+<img src="image/logos.png" width="20" height="20">
+</a>
+</div>
+</nav>
+<div id="output" data-border-style="thin" data-header="true">
+<div id="css-box" class="code-wrap code-box box " role="region" aria-label="CSS">
+<pre></pre>
+<a href="#0" id="view-css-compiled-button" class="action-button bottom right view-compiled-button" data-type="css">
+View Compiled
+</a>
+</div>
+<div id="js-box" class="code-wrap code-box box " role="region" aria-label="My Channels">
+<pre>
+<div id="channel-list">
+...
+</div>
+</pre>
+</div>
+<div id="result-box" class="code-box active" role="region" aria-label="Result">
+<iframe id="result-iframe" class="result-iframe "  tabindex="-1" src="" allowTransparency="true" frameborder="0" scrolling="yes" allowfullscreen="true" name="result-iframe" title="RSS channel viewer by PPk">
+      </iframe>
+</div>
+<div id="about-box">
+<div class="about-container">
+<div class="about-user">
+<a href="https://codepen.io/chriscoyier" target="_blank" rel="noopener" class="about-image" style="background-image: url(image/ppk.png)"></a>
+<div class="about-user-info">
+<p>
+This Demo is Powered by <a href="https://ppkpub.org/" target="_blank" rel="noopener">PPk open protocols</a>.
+
+<br>The H5 source codes modified from <a href="https://codepen.io/chriscoyier" target="_blank" rel="noopener">Chris Coyier's samples</a></p>
+<p>
+<a href="https://ppkpub.org/" target="_blank" rel="noopener" class="about-user-more">
+See more on PPkPub.org
+</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="resources-box" class="resources-box">
+<h3>添加内容频道(RSS Feed)</h3>
+<input id="new_feed_uri" type="text" value="https://rsshub.app/caixin/finance/regulation"><button class="action-button"  onclick="addChannel(document.getElementById('new_feed_uri').value);">添加到我的频道</button>
+<p><font size="-2">请输入新的内容源网址（RSS Feed URL）</font></p>
+<hr>
+<p>
+从RssHub查找可用的频道：<br>
+<ul>
+<li><a class="channel_link" href="https://docs.rsshub.app/new-media.html" target="result-iframe">新媒体</a></li>
+<li><a class="channel_link" href="https://docs.rsshub.app/social-media.html" target="result-iframe">社交媒体</a></li>
+<li><a class="channel_link" href="https://docs.rsshub.app/traditional-media.html" target="result-iframe">传统媒体</a></li>
+<li><a class="channel_link" href="https://docs.rsshub.app/anime.html" target="result-iframe">二次元</a></li>
+<li><a class="channel_link" href="https://docs.rsshub.app/" target="result-iframe">更多</a></li>
+</ul>
+</p>
+</div>
+</div>
+<footer class="embed-footer" id="embed-footer">
+<button id="resources-link" class="resources-link action-button bottom left" href="#js-box" aria-pressed="false" role="button">
+增加内容频道
+</button>
+<ul class="scaling-choices bottom right">
+<li><button class="action-button active" id="zoom-button-1">1×</button></li><li><button class="action-button" id="zoom-button-05">0.5×</button></li><li><button class="action-button" id="zoom-button-025">0.25×</button></li>
+</ul>
+<button id="rerun-button" class="action-button rerun-button bottom right">
+Refresh
+</button>
+</footer>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js'></script>
+<script src="https://cdn.bootcss.com/pako/1.0.6/pako.min.js"></script>
+<script type="text/javascript" src="js/0.1.0/common_func.js"></script>
+<script type="text/javascript" src="js/0.1.0/ppk.js"></script>
+<script>
+var mChannelList=null;
+var mDefaultChannelURI=null;
+
+window.onload=function(){
+    init();
+}
+
+function init(){
+    try{
+        str_cache_info = getLocalConfigData( "ppk-rss-channels" );
+        if( str_cache_info==null || str_cache_info.length==0 ){
+            loadDefaultChannels();
+        }else{
+            mChannelList = JSON.parse( str_cache_info );
+        }
+    }catch(e){
+        console.log("init() exception:"+e);
+        loadDefaultChannels();
+    }
+
+    refreshChannelList();
+
+    viewChannel(mDefaultChannelURI);
+
+}
+
+function loadDefaultChannels(){
+    mChannelList = new Object();
+    mChannelList['ppk:joy/rss/hub(jiemian,list,79)*'] = {'title':'文艺圈_界面新闻'};
+    mChannelList['ppk:joy/rss/hub(geekpark,breakingnews)*'] = {'title':'极客公园 - 资讯'};
+    mChannelList['ppk:joy/rss/hub(jiemian,list,79)*'] = {'title':'文艺圈_界面新闻'};
+    mChannelList['ppk:joy/rss/hub(8btc,14290)*'] = {'title':'PPk的巴比特专栏'};
+    mChannelList['ppk:joy/rss/hub(twitter,user,ppkpub)*'] = {'title':'PPkPub twitter'};
+    mChannelList['ppk:joy/rss/hub(weibo,user,1684197391)*'] = {'title':'小众软件微博'};
+    mChannelList['ppk:joy/rss/hub(bishijie,kuaixun)*'] = {'title':'币世界快讯列表'};
+    mChannelList['ppk:joy/rss/hub(douban,movie,playing)*'] = {'title':'豆瓣正在上映电影'};
+    mChannelList['ppk:joy/rss/hub(36kr,newsflashes)*'] = {'title':'36氪快讯'};
+    mChannelList['ppk:joy/rss/hub(bilibili,bangumi,media,9192)*'] = {'title':'bilibili番剧'};
+    mChannelList['ppk:joy/rss/hub(dianping,user,35185271)*'] = {'title':'大众点评用户'};
+    mChannelList['ppk:joy/rss/hub(21caijing,channel,readnumber)*'] = {'title':'21 财经'};
+    //mChannelList['https://rsshub.app/bjp/apod)*'] = {'title':'北京天文馆#每日一图（HTTP测试）'};
+}
+
+function refreshChannelList(){
+    var html="<ul>";
+    
+    for(var channel_uri in mChannelList) {
+        channel_data = mChannelList[channel_uri];
+        //console.log("mChannelList: channel_uri="+channel_uri+"  channel_data="+channel_data);
+        
+        if(mDefaultChannelURI==null)
+            mDefaultChannelURI = channel_uri;
+            
+        html +="<li><a class='channel_link' href=\"javascript:viewChannel('"+channel_uri+"');\">"+channel_data.title+"</a> <a class='channel_link' href=\"javascript:removeChannel('"+channel_uri+"');\">[X]</a></li>";
+    }
+
+    html+="</ul>";
+    
+    document.getElementById('channel-list').innerHTML = html;
+}
+    
+
+function viewChannel(channel_uri, channel_label=null){
+    if(channel_label==null){
+        try{
+            channel_label = mChannelList[channel_uri].title;
+        }catch(e){
+            channel_label = "无题";
+        }
+    }
+    document.getElementById("current_channel_label").innerHTML=channel_label;
+    document.getElementById("rerun-button").innerHTML=channel_uri;
+    document.getElementById("result-iframe").src="rss_channel.html?go="+channel_uri;
+}
+
+function addChannel( new_channel_uri ){
+    if(new_channel_uri==null || new_channel_uri.length==0){
+        myAlert("请输入有效的内容源网址!\nPlease input valid RSS feed URI!");2
+        return;
+    }
+    
+    if(new_channel_uri.startsWith("https://rsshub.app/") ){
+        //自动将rsshub的内容源地址转化为ppk地址
+        array_uri_parts = new_channel_uri.split('/');
+        
+        console.log( "array_uri_parts=",JSON.stringify(array_uri_parts) );
+        
+        new_channel_uri = 'ppk:joy/rss/hub(';
+        
+        kk=3;
+        console.log("array_uri_parts.length="+array_uri_parts.length);
+        for(;kk<array_uri_parts.length-1;kk++){
+            
+            new_channel_uri +=  array_uri_parts[kk]+',';
+        }
+        new_channel_uri +=  array_uri_parts[kk];
+        new_channel_uri +=')*';
+        
+        console.log("new_channel_uri="+new_channel_uri);
+    }
+    
+    //new_channel_uri="ppk:joy/rss/hub(yicai,brief)*";  //test
+
+    if(new_channel_uri.startsWith("ppk:") ){
+        //PPk网址
+        //内联PPk回调函数
+        function innerCallBackForNewChannel(status,result){
+            if('OK'==status){
+                obj_pttp_data = parseJsonObjFromAjaxResult(result);
+                var tmp_rss_str = PPKLIB.getContentFromData(obj_pttp_data);
+                //console.log("tmp_rss_str="+tmp_rss_str);
+                if(tmp_rss_str == null){
+                    myAlert("没有获得有效RSS内容！\nThe RSS content not found!\n");
+                }else{
+                    parseNewChannelRSS(new_channel_uri,tmp_rss_str);
+                }
+            }else{
+                //myAlert("出错了，请重试\n"+status+"\n"+obj_pttp_data);
+                myAlert("出错了，请重试\nSomething wrong,Please retry!\n"+status+","+result);
+            }
+        }
+        
+        PPKLIB.getPPkData(
+                new_channel_uri,
+                innerCallBackForNewChannel
+            );
+    }else{
+        //http网址
+        $.ajax({
+            type: "GET",
+            url: new_channel_uri,
+            data: {},
+            dataType: "text",
+            success : function (result) {
+                parseNewChannelRSS(new_channel_uri,result);
+            },
+            error:function(xhr,state,errorThrown){
+                console.log("Meet AJAX error!");
+                myAlert("请提供有效的RSS资源网址\nPlease support valid RSS feed URI!");
+            }
+        });
+    }
+    
+    
+}
+
+function parseNewChannelRSS(new_channel_uri,str){
+    var data = new window.DOMParser().parseFromString(str, "text/xml");
+    //console.log(data);
+    if(data==null){
+        myAlert("获得内容格式有误！\nThe RSS content is misformatted!");
+        return;
+    }
+    
+    new_channel_title = new_channel_uri;
+    
+    try{
+        title_selector = data.querySelector("title");
+        if(title_selector!=null){
+            new_channel_title = title_selector.childNodes[0].nodeValue;
+        }
+    }catch(e){
+        console.log("The RSS title not found!");
+    }
+    console.log("new_channel_title="+new_channel_title);
+    
+    mChannelList[new_channel_uri] = {'title':new_channel_title};
+    
+    saveLocalConfigData( "ppk-rss-channels",JSON.stringify(mChannelList) );
+    
+    refreshChannelList();
+    
+    viewChannel(new_channel_uri);
+}
+
+
+function removeChannel(channel_uri){
+    try{
+        delete mChannelList[channel_uri];
+        
+        saveLocalConfigData( "ppk-rss-channels",JSON.stringify(mChannelList) );
+    
+        refreshChannelList();
+    }catch(e){
+       
+    }
+
+}
+
+
+
+</script>
+<script src="https://static.codepen.io/assets/embed/embed-fb8c64f531e690ee83cf3d674e32f7637aea7ece415019046004ad1df5a56fc7.js"></script>
+</body>
+</html>

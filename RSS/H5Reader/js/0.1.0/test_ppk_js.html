@@ -1,0 +1,128 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>测试使用PPk-JS访问PPk网络内容</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+
+<h3>测试使用PPk-JS访问PPk网络内容</h3>
+
+<form class="form-horizontal">
+<div class="form-group">
+    <label for="go_ppk_uri" class="col-sm-2 control-label">PPk网址</label>
+    <div class="col-sm-10">
+      <input list="test_uris"  type="text" class="form-control"  id="go_ppk_uri" value="ppk:joy/" >
+      <datalist id="test_uris">
+        <option value="ppk:joy/"/>
+        <option value="ppk:joy*"/>
+        <option value="ppk:ap2/"/>
+        <option value="ppk:ap2*"/>
+        <option value="ppk:ap2/sub/"/>
+        <option value="ppk:ap2/sub*"/>
+        <option value="ppk:ap2/sub/test.png"/>
+        <option value="ppk:ap2/sub/test.png*1.0"/>
+        <option value="ppk:ap2/sub/test.png*2.0"/>
+        <option value="ppk:ap2/sub/nover.png*"/>
+        <option value="ppk:vdtso/"/>
+        <option value="ppk:joy/rinkeby/0xa6f7ee6c6cfe0b41f2c51eba7a4fa798083c5cb2/pttp(70706B3A38333931312A)*"/>
+        <option value="ppk:105922/"/>
+      </datalist>
+    </div>
+</div>
+
+
+  
+<div class="form-group">
+    <label for="start_btn" class="col-sm-2 control-label"></label>
+    <div class="col-sm-10" align="center">
+      <input type='button' class="btn btn-success"  id="start_btn" value=' 检查环境插件... ' onclick='checkInputs();' disabled="true">
+      <br><br>
+      <div id="qrcode_img" ></div><br>
+      <!--<font size="-2">（注：需升级到PPkBrowser安卓版0.305以上版本，<a href="https://ppkpub.github.io/docs/help_odin_as_did/">请点击阅读这里的操作说明安装和使用</a>。更多信息，<a href="https://ppkpub.github.io/docs/" target="_blank">可以参考奥丁号和PPk开放协议的资料进一步了解</a>。）</font>-->
+    </div>
+</div>
+
+</form>
+
+<div class="form-group">
+    <label for="debug_data" class="col-sm-2 control-label">原始数据(PTTP Data)</label>
+    <div class="col-sm-10">
+      <textarea class="form-control"  id="debug_data" rows=10 readonly></textarea>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="debug_content" class="col-sm-2 control-label">正文内容(Content)</label>
+    <div class="col-sm-10">
+      <textarea class="form-control"  id="debug_content" rows=10 readonly></textarea>
+    </div>
+</div>
+
+</body>
+<script src="https://cdn.bootcss.com/pako/1.0.6/pako.min.js"></script>
+<script type="text/javascript" src="common_func.js"></script>
+<script type="text/javascript" src="ppk.js"></script>
+
+<script type="text/javascript">
+
+
+var mTempData;
+var mTempDataHex;
+
+window.onload=function(){
+    init();
+}
+
+function init(){
+    console.log("init...");
+    
+    
+    if( PPKLIB.isPeerWebPluginEnabled() ){ //检查PPk开放协议相关PeerWeb插件接口可用性
+        setSubmitButton("测试Plugin方式访问PPk网络内容",false);
+    }else{
+        setSubmitButton("测试AJAX方式访问PPk网络内容",false);
+    }
+}
+
+function checkInputs(){
+    var go_ppk_uri=PPKLIB.formatPPkURI(document.getElementById("go_ppk_uri").value);
+    
+    if(go_ppk_uri==null){
+        alert("请输入有效的PPk网址(以ppk:起始)");
+        return;
+    }
+
+    document.getElementById("debug_data").value="Waiting...";
+    document.getElementById("debug_content").value="Waiting...";
+    PPKLIB.getPPkData(go_ppk_uri,myCallback);
+
+}
+
+function myCallback(status,result){
+    if('OK'==status){
+        obj_pttp_data = parseJsonObjFromAjaxResult(result);
+        
+        document.getElementById("debug_data").value=JSON.stringify(obj_pttp_data);
+        document.getElementById("debug_content").value=PPKLIB.getContentFromData(obj_pttp_data);
+
+    }else{
+        setSubmitButton("出错了，请重试",false);
+    }
+}
+
+
+function setSubmitButton(str_label,b_disabled){
+    document.getElementById("start_btn").value=str_label;
+    document.getElementById("start_btn").disabled=b_disabled;
+}
+
+</script>
+
+</body>
+</html>

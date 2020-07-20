@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="UTF-8">
+<link rel="apple-touch-icon" type="image/png" href="https://static.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+<meta name="apple-mobile-web-app-title" content="CodePen">
+<link rel="shortcut icon" type="image/x-icon" href="https://static.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
+<link rel="mask-icon" type="" href="https://static.codepen.io/assets/favicon/logo-pin-8f3771b1072e3c38bd662872f6b673a722f4b3ca2421637d5596661b4e2132cc.svg" color="#111" />
+<title>RSS H5 channel viewer by PPk</title>
+<style>
+body {
+  margin: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-gap: 2rem;
+  background: #B0BEC5;
+}
+
+.imgZoom {
+  width:100%;
+  max-height:200px;
+  box-shadow: 0 0 3px #B0BEC5;
+}
+
+article {
+  background: #ECEFF1;
+  border-radius: 4px;
+  overflow: hidden;
+  font: 12px/1.1 system-ui, sans-serif;
+}
+article a {
+  text-decoration: none;
+  color: #455A64;
+}
+article a:hover, article a:focus {
+  color: #2196F3;
+}
+article h2 {
+  padding: 1rem 1rem;
+  margin: 0;
+}
+
+.popview{
+    display:none;
+    width:100%;
+    height:100%;
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:1;
+    background-color:#fff;
+    opacity:1.0;
+}
+
+.popview .firstLine{
+    color:#666;
+    background:#f7f7f7;
+    font-size:18px;
+    font-weight:bold;
+    cursor:move;
+}
+.popview .item{
+    width:90%;
+    margin:0 auto;
+    height:48px;
+    line-height:48px;
+    padding:0 20px;
+}
+.popview .item .popview_close{
+    display:inline-block;
+    float:right;
+    cursor:pointer;
+}
+
+</style>
+
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</head>
+<body translate="no">
+
+<div id="loading" style="display:true;">
+<br><br><br>
+<center><img src="image/loading.gif"></center>
+</div>
+
+<!-- 弹出内容显示小窗口 -->
+<div class="popview" id="popview">
+    <div class="item firstLine" id="firstLine">
+        <span class="popview_title">详细内容</span>
+        <span class="popview_close" id="close_popview">X</span>
+    </div>
+
+    <iframe id="content-iframe" width="100%" height="100%" src="" allowTransparency="true" frameborder="0" scrolling="auto" allowfullscreen="true" name="content-iframe">
+      </iframe>
+
+    <!--<a href="javascript:void(0)" class="btn_login" onclick="">原文</a>-->
+</div>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js'></script>
+<script src="https://cdn.bootcss.com/pako/1.0.6/pako.min.js"></script>
+
+<script type="text/javascript" src="js/0.1.0/common_func.js"></script>
+<script type="text/javascript" src="js/0.1.0/ppk.js"></script>
+
+<script id="rendered-js">
+var mDataItems=new Map();
+
+window.onload=function(){
+    init();
+}
+
+function init(){
+    console.log("init...");
+    
+    document.getElementById("close_popview").onclick = closePopview;
+
+    var go_ppk_uri=getQueryString("go");
+    
+    if(go_ppk_uri==null ){
+        go_ppk_uri="ppk:joy/rss/hub(douban,movie,playing)*";
+    }
+    
+    if(go_ppk_uri.startsWith("ppk:") ){
+        //PPk网址
+        go_ppk_uri = PPKLIB.formatPPkURI( go_ppk_uri );
+    
+        if(go_ppk_uri==null){
+            showResult("<h2 align='center'>请提供有效的RSS资源网址<br>Please support valid RSS feed URI by PPk</h2>");
+            return;
+        }
+        
+        PPKLIB.getPPkData(go_ppk_uri,myCallback);
+    }else{
+        //http网址
+        $.ajax({
+            type: "GET",
+            url: go_ppk_uri,
+            data: {},
+            dataType: "text",
+            success : function (result) {
+                parseRSS(result);
+            },
+            error:function(xhr,state,errorThrown){
+                console.log("Meet AJAX error!");
+                showResult("<h2 align='center'>请提供有效的RSS资源网址<br>Please support valid RSS feed URI by PPk</h2>");
+            }
+        });
+    }
+}
+
+/* 显示内容显示窗口 */
+function popShowItem(item_sn){
+    //myAlert(mDataItems.get(item_sn).desc);
+    var popview = document.getElementById("popview");
+    popview.style.display = "block";
+    
+    var doc = document.getElementById("content-iframe").contentDocument || document.frames["content-iframe"].document;
+    doc.body.innerHTML = mDataItems.get(item_sn).desc;
+}
+
+/* 关闭内容显示窗口 */
+function closePopview(){
+    var popview = document.getElementById("popview");
+    popview.style.display = "none";
+}
+
+function myCallback(status,result){
+    if('OK'==status){
+        obj_pttp_data = parseJsonObjFromAjaxResult(result);
+        var tmp_rss_str = PPKLIB.getContentFromData(obj_pttp_data);
+        //console.log("tmp_rss_str="+tmp_rss_str);
+        if(tmp_rss_str == null){
+            showResult("<h2 align='center'>没有获得RSS内容！<br>The RSS content not found!</h2>");
+        }else{
+            parseRSS(tmp_rss_str);
+        }
+    }else{
+        //myAlert("出错了，请重试\n"+status+"\n"+obj_pttp_data);
+        showResult("<h2 align='center'>出错了，请重试<br>Something wrong,Please retry!</h2>\n"+status+","+result);
+    }
+}
+
+
+
+function parseRSS(str){
+    var data = new window.DOMParser().parseFromString(str, "text/xml");
+    //console.log(data);
+    if(data==null){
+        showResult("<h2 align='center'>获得内容格式有误！<br>The RSS content is misformatted!</h2>");
+        return;
+    }
+    
+    const items = data.querySelectorAll("item");
+    
+    mDataItems.clear();
+    
+    /*
+    let html = ``;
+    items.forEach(el => {
+      html += `
+        <article>
+          <img src="${el.querySelector("link").innerHTML}/image/large.png" alt="">
+          <h2>
+            <a href="${el.querySelector("link").innerHTML}" target="_blank" rel="noopener">
+              ${el.querySelector("title").innerHTML}
+            </a>
+          </h2>
+        </article>
+      `;
+    });
+    */
+    
+    let html = ``;
+    
+    item_sn=0;
+    items.forEach(el => {
+      link=el.querySelector("link").innerHTML;
+      
+      item = new Object();
+      
+      item.link=el.querySelector("link").innerHTML;
+      item.title=el.querySelector("title").childNodes[0].nodeValue;
+      //item.pubDate=el.querySelector("pubDate").innerHTML;
+      item.image='image/rss.png';
+      item.desc=el.querySelector("description").childNodes[0].nodeValue;
+      img_posn = item.desc.indexOf(' src="');
+      if(img_posn>=0){
+        img_posn_start = item.desc.indexOf('"',img_posn)+1;
+        img_posn_end = item.desc.indexOf('"',img_posn_start);
+        item.image=item.desc.substring(img_posn_start,img_posn_end);
+        //myAlert("item.image="+item.image);
+      }
+      
+      mDataItems.set(item_sn,item);
+      
+      html += `
+        <article>
+          <img class="imgZoom" src="`+item.image+`" alt="">
+          <h2>
+            <a href="javascript:popShowItem(`+item_sn+`)"  rel="noopener">
+              `+item.title+`
+            </a>
+          </h2>
+        </article>
+      `;
+      
+      item_sn++;
+    });
+    
+    //console.log(html);
+    
+    showResult(html);
+}
+
+function showResult(str){
+    document.getElementById('loading').style.display="none";
+    document.body.insertAdjacentHTML("beforeend", str);
+}
+
+</script>
+</body>
+</html>
