@@ -384,8 +384,10 @@ var PPKLIB = function() {
             _mbSupportPeerWebPlugin=false;
         },
         
-        //兼容DID的用户标识处理，得到以ppk:起始的URI
+        //兼容DID的用户标识格式化处理，得到以ppk:起始的URI
         formatPPkURI: function(user_uri){ 
+            //console.log("formatPPkURI:"+user_uri);
+            
             if(typeof user_uri == "undefined" || user_uri==null || user_uri.length==0)
                 return null;
             
@@ -394,8 +396,39 @@ var PPKLIB = function() {
             }else if(user_uri.substring(0,"did:ppk:".length).toLowerCase()=="did:ppk:" ) { 
                 user_uri = user_uri.substring("did:".length);
             }else{
-                user_uri = null ;
+                user_uri = "ppk:"+user_uri ; //自动加上前缀
             }
+              
+            if( user_uri.indexOf('//') >0 ){
+                //存在连续的/字符
+                return null;
+            }
+            
+            resoure_mark_posn = user_uri.indexOf('*');
+            if(resoure_mark_posn<0){
+                //自动判断先添加缺少的"/"字符
+                fisrt_slash_posn=user_uri.indexOf("/");
+                if(fisrt_slash_posn<0){ //是根标识
+                    user_uri += "/";
+                }else{ //是扩展标识
+                    //判断尾部的内容资源名是否有文件扩展名 或者方法标志符
+                    last_slash_posn=user_uri.indexOf("/");
+                    
+                    if( last_slash_posn!=user_uri.length-1){ //不是以"/"字符结尾
+                        last_point_posn=user_uri.lastIndexOf(".");
+                        function_mark_posn = user_uri.lastIndexOf(")");
+                        
+                        if(last_point_posn<last_slash_posn && function_mark_posn<0){
+                            //没有文件扩展名或者是方法标志，默认为目录，需要补上"/"
+                            user_uri += "/";
+                        }
+                    }
+                }
+                
+                user_uri += '*';
+            }
+            
+            //console.log("formatedPPkURI:"+user_uri);
             
             return user_uri;
         },
@@ -477,6 +510,12 @@ var PPKLIB = function() {
                 console.log(str_err);
                 return null;
             }
+        },
+        
+        //删除缓存
+        deleteCache: function(uri){
+            console.log("Delete cache for "+uri);
+            removeLocalConfigData(uri);
         },
             
     }

@@ -47,6 +47,10 @@ function plugInProcessFunctionResource($parent_odin_path,$resource_id,$req_resou
   
   if($function_name=='hub'){
     $tmp_function_result = rsshub($argvs_chunks);
+  }else if($function_name=='ipfs'){
+    $tmp_function_result = rssIpfs($argvs_chunks[0]);
+  }else if($function_name=='rinkeby'){
+    $tmp_function_result = rssRinkeby($argvs_chunks[0]);
   }else{
     $tmp_function_result = array('code'=>404,"msg"=>"NOT EXISTED FUNCTION:".$function_name);
   }
@@ -105,5 +109,76 @@ function rsshub($rss_chunks)
     }
 
     return array('code'=>404,"msg"=>"The rss content not found.");
+}
+
+function rssIpfs($ipfs_hash)
+{
+    if(strlen($ipfs_hash)==0){
+        return array('code'=>400,"msg"=>"No ipfs_hash");
+    }
+    
+    $array_ipfs_gateways = array('https://ipfs.globalupload.io/','https://gateway.pinata.cloud/ipfs/','https://ipfs.io/ipfs/');
+    
+    foreach($array_ipfs_gateways as $tmp_ipfs_gateway  ){
+        $ipfs_gateway_url = $tmp_ipfs_gateway.$ipfs_hash;
+        //echo '$ipfs_gateway_url=',$ipfs_gateway_url;
+        $tmp_content=@file_get_contents($ipfs_gateway_url);
+        
+        //echo '$tmp_content=',$tmp_content;exit;
+        
+        if(strlen($tmp_content)>0 && stripos($tmp_content,'<?xml')!==false){
+           return array('code'=>0,"result_data"=>$tmp_content);
+        }
+    }
+
+    return array('code'=>404,"msg"=>"The rss content not found.");
+}
+
+function rssRinkeby($tmp_address)
+{
+	define('RSS_DATA_FREFIX_HEX' ,'52535346454544'); //'RSSFEED';
+    
+	if(strlen($tmp_address)==0){
+        return array('code'=>400,"msg"=>"No valid address");
+    }
+    
+    $tmp_address=strtolower($tmp_address);
+
+	$base_api_url = 'https://api-rinkeby.etherscan.io/api?module=account&action=txlist&address='.$tmp_address.'&sort=desc&apikey=C6852XSG3HRJAH6IM2DQFBVCAGNHQYJXCF';
+
+    $pagesize = 5;
+	for($page=1;$page<5;$page++){
+		$tmp_content=@file_get_contents( $base_api_url.'&offset='.$pagesize.'&page='.$page );
+
+		$array_resp=@json_decode($tmp_content,true);
+        //print_r($array_resp);exit;
+		
+		if( is_array($array_resp) && array_key_exists('result',$array_resp)){
+		   $tmp_counter=0;
+		   for($tmp_counter=0;$tmp_counter<count($array_resp['result']);$tmp_counter++){
+			   $tmp_tx=$array_resp['result'][$tmp_counter];
+			   //print_r($tmp_tx);echo '<hr>';
+
+               if( $tmp_tx['from'] == $tmp_address && $tmp_tx['to'] == $tmp_address ){
+                   $tmp_posn = stripos($tmp_tx['input'],RSS_DATA_FREFIX_HEX);
+                   if( $tmp_posn>0 )
+                   {
+                       //Matches transaction record that match the corresponding rss data
+					   $str_rss_data=\PPkPub\Util::hexToStr(substr($tmp_tx['input'],$tmp_posn+strlen(RSS_DATA_FREFIX_HEX)));
+					   //echo $str_rss_data;exit;
+					   
+					   return array('code'=>0,"result_data"=>$str_rss_data);
+                   }
+			   }
+			}
+			
+			if( $tmp_counter < $pagesize ){//没有更多记录了
+			   break;
+		    }
+		}else{
+            break; //出错时结束循环
+        }    
+	}
+    return array('code'=>404,"msg"=>"The RSS record not found.");
 }
 

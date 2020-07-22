@@ -5,13 +5,19 @@
 function stringToHex(str){
   var val="";
   for(var i = 0; i < str.length; i++){
+      var tmp_str = str.charCodeAt(i).toString(16);
+      if(tmp_str.length==1){
+          tmp_str = '0'+tmp_str;
+      }
+      
       if(val == "")
-          val = str.charCodeAt(i).toString(16);
+          val = tmp_str;
       else
-          val += str.charCodeAt(i).toString(16);
+          val += tmp_str;
   }
   return val;
 }
+
 
 function setCookie(c_name, value, expiredays){
   var exdate=new Date();

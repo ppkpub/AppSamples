@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
-<title>RSS H5 reader by PPk</title>
+<title>RSS H5 reader demo (Powered by PPk)</title>
 <meta name="csrf-param" content="authenticity_token" />
 <meta name="csrf-token" content="MTcmGJ7Gyz0UvAQ5ZCXbLeviCoIuy8mnY8Lce/luo8MpKMUA1XzEzlVuwaY/8uyBTOjk2rYekbEH8k3R/i128g==" />
 <link rel="stylesheet" media="all" href="https://static.codepen.io/assets/embed/embed-e9af4a5b1b844a30527ae8cb861d180ac1ab94b693ef8c328e530e4930ec3564.css" />
@@ -54,100 +54,143 @@ a{text-decoration:none}
 
 <ul class="code-types">
 
-<!--
-<li class="code-type">
-<a id="css-link" href="#css-box" aria-pressed="false" role="button">
-SCSS
-</a>
-</li>
--->
+    <li class="code-type">
+    <a id="css-link" href="#css-box" aria-pressed="false" role="button">┋我的频道</a>
+    </li>
 
-<li class="code-type">
-<a id="js-link" href="#js-box" aria-pressed="false" role="button">
-我的频道
-</a>
-</li>
-
+    <li class="code-type">
+    <a id="js-link" href="#js-box" aria-pressed="false" role="button">+添加频道</a>
+    </li>
 </ul>
 
 <ul class="result-button-list">
-<li class="results results-type">
-<a id="result-link" href="#result-box" class="active" aria-pressed="true" role="button">
-正读 <span id="current_channel_label"></span>
-</a>
-</li>
+    <li class="results results-type">
+    <a id="result-link" href="#result-box" class="active" aria-pressed="true" role="button">
+    正读 <span id="current_channel_label"></span>
+    </a>
+    </li>
 </ul>
+
 <div class="logo-wrap" id="edit-area">
-<a class="large-logo edit-on-codepen" target="_blank" rel="noopener" href="https://ppkpub.org" title="PPkPub">
-<span id="edit-on-text" class="open-on">Powered by</span>
-<img src="https://ppkpub.org/images/logo.png" height="30">
-</a>
-<a class="box-logo edit-on-codepen" target="_blank" rel="noopener" href="https://ppkpub.org" title="PPk">
-<img src="image/logos.png" width="20" height="20">
-</a>
+    <a class="large-logo edit-on-codepen" target="_blank" rel="noopener" href="https://ppkpub.org" title="PPkPub">
+    <span id="edit-on-text" class="open-on">Powered by</span>
+    <img src="https://ppkpub.org/images/logo.png" height="30">
+    </a>
+    <a class="box-logo edit-on-codepen" target="_blank" rel="noopener" href="https://ppkpub.org" title="PPk">
+    <img src="image/logos.png" width="20" height="20">
+    </a>
 </div>
+
 </nav>
+
 <div id="output" data-border-style="thin" data-header="true">
 <div id="css-box" class="code-wrap code-box box " role="region" aria-label="CSS">
-<pre></pre>
-<a href="#0" id="view-css-compiled-button" class="action-button bottom right view-compiled-button" data-type="css">
-View Compiled
-</a>
-</div>
-<div id="js-box" class="code-wrap code-box box " role="region" aria-label="My Channels">
 <pre>
 <div id="channel-list">
 ...
 </div>
 </pre>
+<!--
+<a href="#js-box" id="resources-link" class="action-button bottom right view-compiled-button" data-type="css">
++添加内容频道
+</a>
+-->
 </div>
+<div id="js-box" class="code-wrap code-box box " role="region" aria-label="My Channels">
+<pre>
+<h3>添加内容频道(RSS Feed)</h3>
+<p>
+<input id="new_feed_uri" list="test_feeds" type="text" value="" placeholder="请选择或输入要新增的内容频道"  style="width:100%;" >
+<datalist id="test_feeds">
+<option value="ppk:83786/hub(caixin,finance,regulation)*">RSSHub的内容源示例1</option>
+<option value="https://rsshub.app/caixin/finance/regulation">RSSHub的内容源示例2</option>
+<option value="ppk:83786/ipfs(QmTY6tr8kitCdKPyPqJg7y7sN54F27LqXj8nq3wJhJgJUt)*">分布式存储IPFS内容源示例1</option>
+<option value="ipfs:QmTY6tr8kitCdKPyPqJg7y7sN54F27LqXj8nq3wJhJgJUt">分布式存储IPFS内容源示例2</option>
+<option value="ppk:83786/rinkeby(0x738799E4f61F4A23A629C7901FdE5746Ba66540d)*">以太坊Rinkeby内容源示例</option></datalist>
+<button class="action-button"  onclick="addChannel(document.getElementById('new_feed_uri').value);">添加到我的频道</button>
+<br>
+</p>
+
+<p><strong>从RSSHub查找可用的频道：</strong><br>
+<font size="-2">提示:将RSSHub网页里举例的内容源地址（如https://rsshub.app/199it）填入后，会自动转换为PPk协议地址</font>
+<ul>
+<li><a class="channel_link" href="https://docs.rsshub.app/new-media.html" target="_blank">新媒体</a></li>
+<li><a class="channel_link" href="https://docs.rsshub.app/social-media.html" target="_blank">社交媒体</a></li>
+<li><a class="channel_link" href="https://docs.rsshub.app/traditional-media.html" target="_blank">传统媒体</a></li>
+<li><a class="channel_link" href="https://docs.rsshub.app/anime.html" target="_blank">二次元</a></li>
+<li><a class="channel_link" href="https://docs.rsshub.app/" target="_blank">更多</a></li>
+</ul>
+</p>
+
+<p>
+<strong>自定义频道内容：</strong>
+上传到区块链：<a class="action-button"  href="https://tool.ppkpub.org/rss/upload_to_chain.html" target="_blank" aria-pressed="false" role="button">以太坊</a>
+<br>上传到分布式存储：<a class="action-button"  href="https://globalupload.io/" target="_blank" aria-pressed="false" role="button">IPFS(globalupload.io)</a><a class="action-button"  href="https://pinata.cloud/" target="_blank" aria-pressed="false" role="button">IPFS(pinata.cloud)</a>
+<br><a  class="action-button" href="https://tool.ppkpub.org/ap2/" target="_blank" aria-pressed="false" role="button">如果要使用自己的奥丁号发布内容，请点击这里...</a>
+</p>
+
+</pre>
+</div>
+
 <div id="result-box" class="code-box active" role="region" aria-label="Result">
 <iframe id="result-iframe" class="result-iframe "  tabindex="-1" src="" allowTransparency="true" frameborder="0" scrolling="yes" allowfullscreen="true" name="result-iframe" title="RSS channel viewer by PPk">
       </iframe>
 </div>
-<div id="about-box">
-<div class="about-container">
-<div class="about-user">
-<a href="https://codepen.io/chriscoyier" target="_blank" rel="noopener" class="about-image" style="background-image: url(image/ppk.png)"></a>
-<div class="about-user-info">
-<p>
-This Demo is Powered by <a href="https://ppkpub.org/" target="_blank" rel="noopener">PPk open protocols</a>.
 
-<br>The H5 source codes modified from <a href="https://codepen.io/chriscoyier" target="_blank" rel="noopener">Chris Coyier's samples</a></p>
-<p>
-<a href="https://ppkpub.org/" target="_blank" rel="noopener" class="about-user-more">
-See more on PPkPub.org
-</a>
-</p>
+<div id="about-box">
+    <div class="about-container">
+    <div class="about-user">
+    <a href="https://codepen.io/chriscoyier" target="_blank" rel="noopener" class="about-image" style="background-image: url(image/ppk.png)"></a>
+    <div class="about-user-info">
+    <p>
+    This Demo is Powered by <a href="https://ppkpub.org/" target="_blank" rel="noopener">PPk open protocols</a>.
+
+    <br>The H5 source codes modified from <a href="https://codepen.io/chriscoyier" target="_blank" rel="noopener">Chris Coyier's samples</a></p>
+    <p>
+    <a href="https://ppkpub.org/" target="_blank" rel="noopener" class="about-user-more">
+    See more on PPkPub.org
+    </a>
+    </p>
+    </div>
+    </div>
+    </div>
 </div>
+
+<div id="resources-box" class="resources-box"> 
+    <div class="about-container">
+    <div class="about-user">
+    <a href="https://codepen.io/chriscoyier" target="_blank" rel="noopener" class="about-image" style="background-image: url(image/ppk.png)"></a>
+    <div class="about-user-info">
+    <p>
+    This Demo is Powered by <a href="https://ppkpub.org/" target="_blank" rel="noopener">PPk open protocols</a>.
+
+    <br>The H5 source codes modified from <a href="https://codepen.io/chriscoyier" target="_blank" rel="noopener">Chris Coyier's samples</a></p>
+    <p>
+    <a href="https://ppkpub.org/" target="_blank" rel="noopener" class="about-user-more">
+    See more on PPkPub.org
+    </a>
+    </p>
+    </div>
+    </div>
+    </div>
 </div>
+
+
 </div>
-</div>
-<div id="resources-box" class="resources-box">
-<h3>添加内容频道(RSS Feed)</h3>
-<input id="new_feed_uri" type="text" value="https://rsshub.app/caixin/finance/regulation"><button class="action-button"  onclick="addChannel(document.getElementById('new_feed_uri').value);">添加到我的频道</button>
-<p><font size="-2">请输入新的内容源网址（RSS Feed URL）</font></p>
-<hr>
-<p>
-从RssHub查找可用的频道：<br>
-<ul>
-<li><a class="channel_link" href="https://docs.rsshub.app/new-media.html" target="result-iframe">新媒体</a></li>
-<li><a class="channel_link" href="https://docs.rsshub.app/social-media.html" target="result-iframe">社交媒体</a></li>
-<li><a class="channel_link" href="https://docs.rsshub.app/traditional-media.html" target="result-iframe">传统媒体</a></li>
-<li><a class="channel_link" href="https://docs.rsshub.app/anime.html" target="result-iframe">二次元</a></li>
-<li><a class="channel_link" href="https://docs.rsshub.app/" target="result-iframe">更多</a></li>
-</ul>
-</p>
-</div>
-</div>
+
 <footer class="embed-footer" id="embed-footer">
+<!--
 <button id="resources-link" class="resources-link action-button bottom left" href="#js-box" aria-pressed="false" role="button">
 增加内容频道
+</button>
+-->
+<button id="resources-link" class="resources-link action-button bottom left" href="#about-box" aria-pressed="false" role="button">
+关于此示例
 </button>
 <ul class="scaling-choices bottom right">
 <li><button class="action-button active" id="zoom-button-1">1×</button></li><li><button class="action-button" id="zoom-button-05">0.5×</button></li><li><button class="action-button" id="zoom-button-025">0.25×</button></li>
 </ul>
-<button id="rerun-button" class="action-button rerun-button bottom right">
+<button id="rerun-button" class="action-button rerun-button bottom right" onclick="refreshChannelView()">
 Refresh
 </button>
 </footer>
@@ -159,13 +202,16 @@ Refresh
 var mChannelList=null;
 var mDefaultChannelURI=null;
 
+var mCurrentChannelURI=null;
+var mCurrentChannelLabel=null;
+
 window.onload=function(){
     init();
 }
 
 function init(){
     try{
-        str_cache_info = getLocalConfigData( "ppk-rss-channels" );
+        str_cache_info = getLocalConfigData( "PPkRssChannels" );
         if( str_cache_info==null || str_cache_info.length==0 ){
             loadDefaultChannels();
         }else{
@@ -184,18 +230,17 @@ function init(){
 
 function loadDefaultChannels(){
     mChannelList = new Object();
-    mChannelList['ppk:joy/rss/hub(jiemian,list,79)*'] = {'title':'文艺圈_界面新闻'};
-    mChannelList['ppk:joy/rss/hub(geekpark,breakingnews)*'] = {'title':'极客公园 - 资讯'};
-    mChannelList['ppk:joy/rss/hub(jiemian,list,79)*'] = {'title':'文艺圈_界面新闻'};
-    mChannelList['ppk:joy/rss/hub(8btc,14290)*'] = {'title':'PPk的巴比特专栏'};
-    mChannelList['ppk:joy/rss/hub(twitter,user,ppkpub)*'] = {'title':'PPkPub twitter'};
-    mChannelList['ppk:joy/rss/hub(weibo,user,1684197391)*'] = {'title':'小众软件微博'};
-    mChannelList['ppk:joy/rss/hub(bishijie,kuaixun)*'] = {'title':'币世界快讯列表'};
-    mChannelList['ppk:joy/rss/hub(douban,movie,playing)*'] = {'title':'豆瓣正在上映电影'};
-    mChannelList['ppk:joy/rss/hub(36kr,newsflashes)*'] = {'title':'36氪快讯'};
-    mChannelList['ppk:joy/rss/hub(bilibili,bangumi,media,9192)*'] = {'title':'bilibili番剧'};
-    mChannelList['ppk:joy/rss/hub(dianping,user,35185271)*'] = {'title':'大众点评用户'};
-    mChannelList['ppk:joy/rss/hub(21caijing,channel,readnumber)*'] = {'title':'21 财经'};
+    mChannelList['ppk:83786/hub(jiemian,list,79)*'] = {'title':'文艺圈_界面新闻'};
+    mChannelList['ppk:83786/hub(geekpark,breakingnews)*'] = {'title':'极客公园 - 资讯'};
+    mChannelList['ppk:83786/hub(jiemian,list,79)*'] = {'title':'文艺圈_界面新闻'};
+    mChannelList['ppk:83786/hub(8btc,14290)*'] = {'title':'PPk的巴比特专栏'};
+    mChannelList['ppk:83786/hub(weibo,user,1684197391)*'] = {'title':'小众软件微博'};
+    mChannelList['ppk:83786/hub(bishijie,kuaixun)*'] = {'title':'币世界快讯列表'};
+    mChannelList['ppk:83786/hub(douban,movie,playing)*'] = {'title':'豆瓣正在上映电影'};
+    mChannelList['ppk:83786/hub(36kr,newsflashes)*'] = {'title':'36氪快讯'};
+    mChannelList['ppk:83786/hub(bilibili,bangumi,media,9192)*'] = {'title':'bilibili番剧'};
+    mChannelList['ppk:83786/hub(dianping,user,35185271)*'] = {'title':'大众点评用户'};
+    mChannelList['ppk:83786/hub(21caijing,channel,readnumber)*'] = {'title':'21 财经'};
     //mChannelList['https://rsshub.app/bjp/apod)*'] = {'title':'北京天文馆#每日一图（HTTP测试）'};
 }
 
@@ -229,6 +274,9 @@ function viewChannel(channel_uri, channel_label=null){
     document.getElementById("current_channel_label").innerHTML=channel_label;
     document.getElementById("rerun-button").innerHTML=channel_uri;
     document.getElementById("result-iframe").src="rss_channel.html?go="+channel_uri;
+    
+    mCurrentChannelURI = channel_uri;
+    mCurrentChannelLabel = channel_label;
 }
 
 function addChannel( new_channel_uri ){
@@ -236,14 +284,29 @@ function addChannel( new_channel_uri ){
         myAlert("请输入有效的内容源网址!\nPlease input valid RSS feed URI!");2
         return;
     }
+    new_channel_uri=new_channel_uri.trim();
     
-    if(new_channel_uri.startsWith("https://rsshub.app/") ){
+    to_lower_uri = new_channel_uri.toLowerCase();
+    
+    if( !new_channel_uri.startsWith("ppk:") 
+        && !to_lower_uri.startsWith("http:" ) 
+        && !to_lower_uri.startsWith("https:" ) 
+        && !to_lower_uri.startsWith("ipfs:" ) 
+        && !new_channel_uri.startsWith("Q" )  //ipfs哈希值
+    ){
+        //不支持的地址
+        myAlert("输入的内容源网址无效!");
+        return;
+    }
+    
+    
+    if(to_lower_uri.startsWith("https://rsshub.app/") ){
         //自动将rsshub的内容源地址转化为ppk地址
         array_uri_parts = new_channel_uri.split('/');
         
         console.log( "array_uri_parts=",JSON.stringify(array_uri_parts) );
         
-        new_channel_uri = 'ppk:joy/rss/hub(';
+        new_channel_uri = 'ppk:83786/hub(';
         
         kk=3;
         console.log("array_uri_parts.length="+array_uri_parts.length);
@@ -253,11 +316,22 @@ function addChannel( new_channel_uri ){
         }
         new_channel_uri +=  array_uri_parts[kk];
         new_channel_uri +=')*';
+    }else if(to_lower_uri.startsWith("ipfs:") ){
+        //自动将IPFS源地址转化为ppk地址
+        new_channel_uri = 'ppk:83786/ipfs('+ new_channel_uri.substring(5) +')*';
+    }else if(new_channel_uri.startsWith("Q") ){
+        //自动将IPFS的哈希地址转化为ppk地址
+        new_channel_uri = 'ppk:83786/ipfs('+ new_channel_uri +')*';
+    }else if(to_lower_uri.indexOf("ipfs")>0 ){
+        //自动将其它的IPFS代理源地址转化为ppk地址
+        tmp_posn = new_channel_uri.lastIndexOf('/');
         
-        console.log("new_channel_uri="+new_channel_uri);
+        new_channel_uri = 'ppk:83786/ipfs('+ new_channel_uri.substring(tmp_posn+1) +')*';
     }
     
-    //new_channel_uri="ppk:joy/rss/hub(yicai,brief)*";  //test
+    console.log("new_channel_uri="+new_channel_uri);
+    
+    //new_channel_uri="ppk:83786/hub(yicai,brief)*";  //test
 
     if(new_channel_uri.startsWith("ppk:") ){
         //PPk网址
@@ -304,7 +378,7 @@ function addChannel( new_channel_uri ){
 
 function parseNewChannelRSS(new_channel_uri,str){
     var data = new window.DOMParser().parseFromString(str, "text/xml");
-    //console.log(data);
+    console.log("data="+data);
     if(data==null){
         myAlert("获得内容格式有误！\nThe RSS content is misformatted!");
         return;
@@ -324,7 +398,7 @@ function parseNewChannelRSS(new_channel_uri,str){
     
     mChannelList[new_channel_uri] = {'title':new_channel_title};
     
-    saveLocalConfigData( "ppk-rss-channels",JSON.stringify(mChannelList) );
+    saveLocalConfigData( "PPkRssChannels",JSON.stringify(mChannelList) );
     
     refreshChannelList();
     
@@ -336,12 +410,38 @@ function removeChannel(channel_uri){
     try{
         delete mChannelList[channel_uri];
         
-        saveLocalConfigData( "ppk-rss-channels",JSON.stringify(mChannelList) );
+        saveLocalConfigData( "PPkRssChannels",JSON.stringify(mChannelList) );
     
         refreshChannelList();
     }catch(e){
        
     }
+
+}
+
+function refreshChannelView(){
+    //myAlert("当前频道信息:\n"+"标题: "+mCurrentChannelLabel+"\n来源: "+mCurrentChannelURI);
+    PPKLIB.deleteCache(mCurrentChannelURI);
+    viewChannel(mCurrentChannelURI);
+    
+    //自动填入，方便修改和粘贴
+    tmp_input = document.getElementById('new_feed_uri');
+    tmp_input.value = mCurrentChannelURI; 
+    /*
+    try{
+        tmp_input.select();
+        //进行复制到剪切板
+        if(document.execCommand("Copy","false",null)){
+          //如果复制成功
+          console.log("复制成功！");  
+        }else{
+          //如果复制失败
+          console.log("复制失败！");
+        }
+    }catch(err){
+        //如果报错
+        console.log("复制错误！")
+    }*/
 
 }
 

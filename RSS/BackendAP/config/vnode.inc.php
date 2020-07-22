@@ -8,5 +8,11 @@ $gMapSiteURI
                     'redirect'=>false,  
                     'plugin'=>'rss.php',  
                 ), 
+        'ppk:83786/' => array( 
+                    'dest'=>'ppk:joy/rss/',
+                    'redirect'=>false,  
+                    'plugin'=>'rss.php',  
+                ), 
+
      ) ; 
 

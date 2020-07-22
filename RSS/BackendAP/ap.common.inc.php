@@ -4,6 +4,9 @@
     PPkPub.org   20200720
   Released under the MIT License.
 */
+ini_set("display_errors", "On"); 
+error_reporting(E_ALL | E_STRICT);
+
 //Root path
 define('PLUS_SITE_HTDOCS_PREFIX', dirname(__FILE__).DIRECTORY_SEPARATOR); 
 
