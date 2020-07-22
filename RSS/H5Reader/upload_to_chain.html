@@ -1,0 +1,279 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RSS内容上链工具</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<h2 >RSS内容上链工具</h2>
+<form class="form-horizontal">
+<div class="form-group">
+	<label for="rss_data" class="col-sm-2 control-label">RSS内容数据(ATOM格式)</label>
+	<div class="col-sm-10">
+	 <textarea class="form-control" name="rss_data" id="rss_data" rows=5 ><?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title><![CDATA[199it]]></title>
+        <link>http://www.199it.com/newly</link>
+        <atom:link href="http://rsshub.app/199it" rel="self" type="application/rss+xml" />
+        <description><![CDATA[199it - Made with love by RSSHub(https://github.com/DIYgod/RSSHub)]]></description>
+        <generator>RSSHub</generator>
+        <webMaster>i@diygod.me (DIYgod)</webMaster>
+        
+
+        <language>zh-cn</language>
+        
+        <lastBuildDate>Tue, 21 Jul 2020 06:07:04 GMT</lastBuildDate>
+        <ttl>60</ttl>
+        
+        <item>
+            <title><![CDATA[IBM：2Q20营收同比下降5.4%至181亿美元]]></title>
+            <description><![CDATA[IBM：2Q20营收同比下降5.4%至181亿美元]]></description>
+            <pubDate>Tue, 21 Jul 2020 02:55:38 GMT</pubDate>
+            <guid isPermaLink="false">http://www.199it.com/archives/1087861.html</guid>
+            <link>http://www.199it.com/archives/1087861.html</link>
+        </item>
+        
+        <item>
+            <title><![CDATA[QuestMobile:2020跨平台KOL生态研究报告 头部网红难觅、转化良莠不齐，网红机构集中趋势明显]]></title>
+            <description><![CDATA[QuestMobile:2020跨平台KOL生态研究报告 头部网红难觅、转化良莠不齐，网红机构集中趋势明显]]></description>
+            <pubDate>Tue, 21 Jul 2020 02:19:02 GMT</pubDate>
+            <guid isPermaLink="false">http://www.199it.com/archives/1087796.html</guid>
+            <link>http://www.199it.com/archives/1087796.html</link>
+        </item>
+        
+        <item>
+            <title><![CDATA[2015-2019届大学应届毕业生起薪变化（附原数据表） ​​​​]]></title>
+            <description><![CDATA[2015-2019届大学应届毕业生起薪变化（附原数据表） ​​​​]]></description>
+            <pubDate>Tue, 21 Jul 2020 02:18:15 GMT</pubDate>
+            <guid isPermaLink="false">http://www.199it.com/archives/1087856.html</guid>
+            <link>http://www.199it.com/archives/1087856.html</link>
+        </item>
+    </channel>
+</rss>
+</textarea>
+	</div>
+</div>
+
+
+<div class="form-group">
+	<label for="current_address" class="col-sm-2 control-label">用户钱包地址</label>
+	<div class="col-sm-10">
+	 <span id="current_address"></span>
+	</div>
+</div>
+
+<div class="form-group">
+	<label for="current_chain_info" class="col-sm-2 control-label">所在区块链</label>
+	<div class="col-sm-10">
+	 <span id="current_chain_info"></span>
+	</div>
+</div>
+
+</form>
+<center>
+<input id="btn_save_to_chain" type='button' class="btn btn-primary" onclick="saveToChain( );" value="保存到链上" >
+</center>
+<p><font size="-2">提示: 待成功发送交易并被确认保存到指定链后, 即可将下述对等网址做为你的RSS内容频道地址</font><br>
+<input id="onchain_rss_uri"  type="text" class="form-control"   value="" readonly>
+
+<script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+<script src="js/0.1.0/common_func.js"></script>
+<script>
+  var str_remark_hex = "";
+  var user_chain_code = "";
+  var user_wallet_address = "";
+  
+  window.addEventListener('load', async () => {
+    console.log("init...");
+	
+	// Checking if ETH Plugin has been injected by the browser (Mist/MetaMask)
+    if (typeof(web3) !== 'undefined' || typeof(ethereum) !== 'undefined') {
+		// Use Mist/MetaMask's provider
+        if (window.ethereum) { // Modern dapp browsers...
+            let ethereum = window.ethereum;
+            window.web3 = new Web3(ethereum);
+            try {
+                // Request account access if needed
+                await  ethereum.enable();
+
+            } catch (error) {
+                // User denied account access...
+            }
+        } else if (window.web3) { // Legacy dapp browsers...
+            window.web3 = new Web3(web3.currentProvider);
+
+        }
+        if (typeof(window.web3.eth.getChainId) !== 'undefined' ){ //New version
+            window.web3.eth.getChainId((error, now_chain_id) => {
+              if (!error){
+                console.log("Current eth now_chain_id = "+now_chain_id);
+                setEthChain(now_chain_id);
+              }else{
+                setEthChain(-1);
+              }
+            });
+        }else if (typeof(window.web3.version.getNetwork) !== 'undefined' ){ //Old version
+            window.web3.version.getNetwork((error, netId) => {
+              if (!error){
+                console.log("Current eth netId = "+netId);
+                setEthChain( parseInt(netId) );
+              }else{
+                setEthChain(-1);
+              }
+            });
+        }else{
+            setEthChain(-1);
+        }
+
+        window.web3.eth.getAccounts(function (error, result) {2
+            if (!error)
+              console.log("result="+result)//授权成功后result能正常获取到地址了
+              user_wallet_address = ""+result;
+              document.getElementById("current_address").innerHTML=user_wallet_address;
+
+              var version = web3.version.network;
+              console.log("version="+version);
+          });
+    } else{
+        disableSaveButton("请使用支持以太坊DAPP的钱包或Metamask浏览器插件");
+    }
+  });
+
+  function setEthChain(now_chain_id){
+    if(now_chain_id==4){
+        user_chain_code = "rinkeby";
+        document.getElementById("current_chain_info").innerHTML = "Rinkeby测试网("+user_chain_code+")";
+        enableSaveButton("保存到链上");
+    /*}else if(now_chain_id==1){
+        user_chain_code = "eth";
+        document.getElementById("current_chain_info").innerHTML = "主网("+user_chain_code+")";
+        enableSaveButton("保存到链上");*/
+    }else if(now_chain_id==-1){
+        document.getElementById("current_chain_info").innerText="没有获得以太坊网络信息，请刷新试试！";
+        disableSaveButton("没有获得以太坊网络信息，请刷新试试！");
+    }else{
+        document.getElementById("current_chain_info").innerText="请切换到Rinkeby测试网络！";
+        disableSaveButton("请切换到Rinkeby测试网络");
+    } 
+  }
+  
+  function saveToChain(){
+    str_remark_hex = stringToHex( 'RSSFEED'+utf16ToUtf8(document.getElementById("rss_data").value ) );
+    
+    //document.getElementById("rss_data").value = str_remark_hex;
+    
+	if(user_chain_code=="eth"){
+        saveToETH(1,"主网");
+    }else if( user_chain_code=="rinkeby" ){
+        saveToETH(4,"Rinkeby测试网");
+	}else{
+		alert("不支持的链("+user_chain_code+")");
+	}
+  }
+  
+  function saveToETH(dest_chain_id,dest_chain_info){
+	if (window.ethereum) { // Modern dapp browsers...
+        let ethereum = window.ethereum;
+        window.web3 = new Web3(ethereum);
+    } else if (window.web3) { // Legacy dapp browsers...
+        window.web3 = new Web3(web3.currentProvider);
+    }
+    if (typeof(window.web3.eth.getChainId) !== 'undefined' ){ //New version
+        window.web3.eth.getChainId((error, now_chain_id) => {
+          if (!error){
+            console.log("Current eth now_chain_id = "+now_chain_id);
+            sendByEthChain(now_chain_id,dest_chain_id,dest_chain_info);
+          }else{
+            sendByEthChain(-1,dest_chain_id,dest_chain_info);
+          }
+        });
+    }else if (typeof(window.web3.version.getNetwork) !== 'undefined' ){ //Old version
+        window.web3.version.getNetwork((error, netId) => {
+          if (!error){
+            console.log("Current eth netId = "+netId);
+            sendByEthChain( parseInt(netId),dest_chain_id,dest_chain_info );
+          }else{
+            sendByEthChain(-1,dest_chain_id,dest_chain_info);
+          }
+        });
+    }else{
+        sendByEthChain(-1,dest_chain_id,dest_chain_info);
+    }
+
+  }
+  
+  function sendByEthChain(now_chain_id,dest_chain_id,dest_chain_info){
+    if(now_chain_id==-1){
+        disableSaveButton("没有获得以太坊网络信息，请刷新试试！");
+    }else if( now_chain_id==dest_chain_id ){
+        disableSaveButton( "正在生成交易，请稍候..." );
+        
+        //myalert(str_remark_hex);
+        var transactionObject = {
+              from: user_wallet_address,
+              to: user_wallet_address,
+              value: "10000000000000",
+              gas:  15000*str_remark_hex.length/1000,
+              gasPrice: "30000000000",
+              //nonce: 0,
+              data:  "0x"+str_remark_hex
+            };
+
+        web3.eth.sendTransaction(transactionObject, (err, hash) => {
+          if (!err) { 
+            document.getElementById("onchain_rss_uri").value='ppk:83786/'+user_chain_code+'('+user_wallet_address+')*';
+            disableSaveButton( "已发出以太坊ETH交易到"+dest_chain_info ); 
+          }
+          else { myalert(err); enableSaveButton( " 重  试 " );  }
+        });
+        /*
+        window.web3.eth.getTransactionCount(user_wallet_address, (error, nonce) => {
+          if (!error){
+            var transactionObject = {
+              //from: user_wallet_address,
+              //to: user_wallet_address,
+              //value: 1000,
+              //gas:  35000,
+              //gasPrice: 30000000000,
+              //nonce: nonce,
+              data:  str_remark_hex
+            };
+            alert("6666:"+user_wallet_address);
+            web3.eth.sendTransaction(transactionObject, (err, res) => {
+              if (!err) { disableSaveButton( "已发出以太坊ETH交易到"+dest_chain_info ); }
+              else { myalert(err); enableSaveButton( " 重  试 " );  }
+            });
+          }else{
+              myalert(error); enableSaveButton( " 重  试 " ); 
+          }
+        }) 
+        */
+    }else{
+        disableSaveButton("请将以太坊钱包切换到"+dest_chain_info);  
+    } 
+  }
+  
+  
+  
+  function enableSaveButton( str_label  ){
+    document.getElementById("btn_save_to_chain").disabled=false;
+    document.getElementById("btn_save_to_chain").value=str_label;
+  }
+  
+  function disableSaveButton( str_label ){
+    document.getElementById("btn_save_to_chain").disabled=true;
+    document.getElementById("btn_save_to_chain").value=str_label;
+  }
+  
+  
+  function myalert(obj){
+    alert(JSON.stringify(obj));
+  }
+
+</script>
