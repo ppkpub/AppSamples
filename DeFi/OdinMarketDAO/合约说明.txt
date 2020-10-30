@@ -1,0 +1,222 @@
+合约代码:
+
+OdinMarketDao.sol 在以太坊上买卖奥丁号的合约
+
+OracleODIN.sol 奥丁号的预言机
+
+ERC-20目录下是项目治理Token，采用openzeppelin的标准合约模板
+
+注意：以上合约代码尚未经过严格检查，仅供学习测试，请勿用于正式应用!!!
+
+--------------------------------------------------------------------
+
+买卖合约测试
+
+在以太坊Rinkby测试链或币安BSC测试链上运行，需要使用以太坊合约在线调试工具（http://remix.ethereum.org/）和Metamask插件。
+
+以太坊Rinkby测试链:
+    配置和测试币领取说明（注意选择使用Rinkeby测试网络）: 
+    https://www.jianshu.com/p/bd82aab0b697
+
+币安BSC测试链：
+    配置说明(注意按文中说明，配置metamask连接的是BSC Testnet)：
+    https://docs.binance.org/smart-chain/wallet/metamask.html
+    测试币领取地址：
+    https://testnet.binance.org/faucet-smart
+
+买卖合约代买里预设了下述几个相关合约参数以方便测试，如需要可以自行调整:
+    
+    address _projectDaoTokenContractAddress=0xBD5C1b5900B8106192214f8E08Ae8D8dDfB08210;//指定项目治理TOKEN合约地址
+    
+    address _oracleOdinContractAddress=0x5aCBBF15a27c8f93d4D0F48243F538FF05A4478a;  //ODIN号信息预言机
+    
+
+需要自行准备5个以太坊账户地址，对应下述角色：
+    合约部署者Deployer（同时自动成为第一个投票人Voter1，不需要注入资金）  例如 0x9d4db8a08B362F25d45752025C40FF2De16d6C0e
+    
+    投票人Voter2 例如  0xc6CD68C905ddD8F011a296dC51386562924460d1
+    投票人Voter3 例如  0x60062980fC55e09CCe98d33c9BEc7655cc301633
+    
+    卖家Seller 例如  0xdc58e70fd42c2494559F01cF4320E1213de65d26
+    买家Buyer 例如 0xFf42Db740D5fAc23cAc414DfED12308715D11988
+
+测试过程:
+1.Deployer部署OdinMarketDao合约，得到市场DAO合约地址例如 0xB9682F70478FcB7d71dc10DDB694577f6129641d
+  查看合约的_lastVoterID属性值应为 1
+  查看合约的_poolStarted属性值应为 false ，表示等待更多投票人以启动DAO
+
+  从项目治理Token合约发送100000 TOEKN给市场DAO合约
+  
+2.Voter2发送0.1ETH 到市场DAO合约 
+  调用getUserBalance()查询用户可用充值余额应变为 100000000000000000 wei , 锁定金额 0 wei， 投票奖励金额 0 wei
+  调用donateToBeVoter(100000000000000000) , 申请成为投票人，向DAO兑换池中赞助注入 100000000000000000 wei 即0.1 ETH 
+  查看合约的_lastVoterID属性值变为 2
+  调用getUserBalance()查询用户可用充值余额应变为 0 wei , 锁定金额 0 wei， 投票奖励金额 0 wei
+  
+
+  Voter3发送0.2ETH 到市场DAO合约
+  调用getUserBalance()查询用户可用充值余额应变为 200000000000000000 wei , 锁定金额 0 wei， 投票奖励金额 0 wei
+  调用donateToBeVoter(100000000000000000) , 申请成为投票人，向DAO兑换池中赞助注入 100000000000000000 wei 即0.1 ETH 
+  查看合约的_lastVoterID属性值变为 3
+  调用getUserBalance()查询用户可用充值余额应变为 100000000000000000 wei , 锁定金额 0 wei， 投票奖励金额 0 wei
+  
+  
+3.查看合约的_poolStarted属性值应变为 true ，表示已有设定数量投票人加入，DAO已启动
+  查看合约兑换池ETH余额_poolEthBalanceWei变为  200000000000000000 wei 即0.2 ETH 
+  查看合约兑换池Token余额_poolTokenBalance变为  100000 
+
+4.卖家充值 0.01 ETH 到上述合约地址                                       
+  通过Reimx调试工具调用合约里的方法getUserBalance()查询用户可用充值余额应为  10000000000000000 wei  即0.01 ETH 
+
+  卖家调用createMarket()发起卖单，拍卖一个奥丁号例如 888 ,        价格 2000000000000000 wei 即0.002 ETH 
+  调用getUserBalance()查询用户可用充值余额应变为 8000000000000000 wei , 锁定金额 1800000000000000 wei
+  调用getLastMarketID()能查询到新增的卖单编号如1 
+  调用getMarket(1)能查询到新增的卖单具体信息类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0x0000000000000000000000000000000000000000,0,,0
+  查看_poolEthBalanceWei属性值增加为 202000000000000000 wei 
+      _poolTokenBalance属性值减少为 99900
+  到metamask里查看其MOT1代币余额有增加100
+  
+5.买家充值 0.015 ETH 到合约
+  调用getUserBalance()查询用户可用充值余额应为   15000000000000000 wei
+
+  买家调用createBid()发起报价，对应卖单1 ,             价格 3000000000000000 wei 即0.003 ETH  ，收款BTC地址为 1test
+  调用getUserBalance()查询用户可用充值余额应变为 12000000000000000 wei,  锁定金额  2700000000000000 wei
+  调用getMarket(1)能查询到卖单信息发生变更，类似  
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,0
+  查看_poolEthBalanceWei属性值增加为 205000000000000000 wei 
+      _poolTokenBalance属性值减少为 99750
+  到metamask里查看其MOT1代币余额有增加150
+
+6.卖家调用acceptLastBid() 确认报价，对应卖单1 
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,1
+  
+7.买家调用confirmReceived()确认收到，对应卖单1
+  调用getUserBalance()查询买家可用充值余额不变，仍为 12000000000000000 wei , 锁定金额 0 wei
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,2
+  调用getUserBalance()查询卖家可用充值余额应变为 12500000000000000 = 8000000000000000+1800000000000000+2700000000000000 wei
+
+8.卖家提现 12500000000000000 wei 即 0.0125 ETH
+  调用getUserBalance()查询卖家可用充值余额应变为 0
+  到metamask里查看其ETH余额有相应增加
+
+9.买家提现 12000000000000000 wei 即0.0012 ETH
+  调用getUserBalance()查询买家可用充值余额应变为 0
+  到metamask里查看其ETH余额有相应增加
+
+
+
+
+
+------------------------------------------------------------------------------------------------
+将持有的Token换为ETH
+1.卖家到metamask里查看其Token余额变为 100
+  调用项目治理TOKEN合约的approve()方法，授权市场DAP合约可转账额度为 100
+
+2.卖家调用市场DAP合约的countSwappableToken(50,true)计算对能兑换到的Eth数量为 100350927192391 wei 即 0.000100350927192391 ETH
+      查看_poolEthBalanceWei属性值减少为 200400801603206412 wei 
+          _poolTokenBalance属性值增加为 99750
+          
+  卖家调用市场DAP合约的swapProjectTokenToETH(50,false)来将持有的Token换为ETH,并存入用户在合约的账户
+  调用getUserBalance()查询卖家可用充值余额变为 100350927192391
+  到metamask里查看其ETH余额不变
+                  其Token余额变为 50
+  
+3.卖家调用市场DAP合约的countSwappableToken(50,false)计算对能兑换到的Eth数量为 100350927192391 wei 
+      查看_poolEthBalanceWei属性值减少为 200300450676014021
+          _poolTokenBalance属性值为 99800
+          
+  卖家调用市场DAP合约的swapProjectTokenToETH(50,true)来将持有的Token换为ETH,并直接提现到自己地址
+  调用getUserBalance()查询卖家可用充值余额不变为 0
+  到metamask里查看其ETH余额有相应增加
+                  其Token余额变为 0
+
+
+------------------------------------------------------------------------------------------------
+预言机合约功能测试
+
+对应上述买卖合约测试过程的第7步，也可以换成卖家在成功转移奥丁号所有权后来确认交易完成，这时需要用到预言机功能来获取奥丁号的状态数据。
+
+1.由买卖合约里设置的预言机合约对应维护者，来调用预言机合约里的 updateODIN() 更新状态数据， 参数取值例如 奥丁号 888  注册者 1test  区块号0表示测试
+
+2.卖家调用confirmReceived()确认收到，对应卖单1
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,2
+  调用getUserBalance()查询卖家可用充值余额应变为 12900000000000000 wei
+  
+  
+------------------------------------------------------------------------------------------------
+投票仲裁测试- 卖家获得过半数票支持
+
+对应到上述买卖合约测试过程的第7步，改为
+7.买家调用abortBid()申请取消已锁定的交易并退款，对应卖单1
+  调用getUserBalance()查询买家可用充值余额不变，仍为 12000000000000000 wei,  锁定金额  2940000000000000 wei
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,4
+
+8.deployer即voter1调用voteBid(1,5)支持卖家投票
+  调用getVoteInfo(1)能查询到投票状态记录，类似 
+    tuple(uint256,uint256,uint256[]): 1,0,5,0,0
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,4
+    
+9.voter2调用voteBid(1,5)支持卖家投票
+  调用getVoteInfo(1)能查询到投票状态记录，类似 
+    tuple(uint256,uint256,uint256[]): 2,0,5,5,0
+  
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,5
+
+10.卖家调用 abortMarket(1) 确认按投票结果结束交易，对应卖单1
+  调用getUserBalance()查询买家可用充值余额不变，仍为 12000000000000000 wei, 锁定金额变为  0 wei
+  
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,3
+    
+  调用getUserBalance()查询卖家可用充值余额应变为 12312000000000000 = 8000000000000000+1960000000000000*0.7+2940000000000000 wei
+                              锁定金额变为   0 wei
+  
+  调用getUserBalance()查询deployer可用充值余额  0 wei
+                              锁定金额为    0 wei
+                              投票奖励金额变为 294000000000000 = 1960000000000000*0.3/2
+                              
+  调用getUserBalance()查询voter2可用充值余额   0 wei
+                              锁定金额为   0 wei
+                              投票奖励金额变为 294000000000000 = 1960000000000000*0.3/2
+                              
+-------------------------------------------------------------------------------------------------------                                         
+投票仲裁测试- 买家获得过半数票支持
+
+对应到上述买卖合约测试过程的第7步，改为
+7.买家调用abortBid()申请取消已锁定的交易并退款，对应卖单1
+  调用getUserBalance()查询买家可用充值余额不变，仍为 12000000000000000 wei,  锁定金额  2940000000000000 wei
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,4
+
+8.voter_deployer调用voteBid(1,5)支持卖家投票
+  调用getVoteInfo(1)能查询到投票状态记录，类似 
+    tuple(uint256,uint256,uint256[]): 1,0,5,0,0
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,4
+    
+9.voter_seller调用voteBid(1,5)支持卖家投票
+  调用getVoteInfo(1)能查询到投票状态记录，类似 
+    tuple(uint256,uint256,uint256[]): 2,0,5,5,0
+  
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,5
+
+10.买家调用 abortBit(1) 确认投票结果，对应卖单1
+  调用getUserBalance()查询买家可用充值余额应变为 16312000000000000 = 12000000000000000 + 1960000000000000*0.7+2940000000000000 wei
+                                    锁定金额变为  0 wei
+                                    投票奖励金额变为 294000000000000 = 1960000000000000*0.3/2
+  调用getMarket(1)能查询到卖单信息发生变更，类似 
+    market 888,0xdc58e70fd42c2494559F01cF4320E1213de65d26,2000000000000000,0xFf42Db740D5fAc23cAc414DfED12308715D11988,3000000000000000,1test,3
+  调用getUserBalance()查询卖家可用充值余额不应变为 8000000000000000 wei
+                              锁定金额变为   0 wei
+                              投票奖励金额变为 0 wei
+  调用getUserBalance()查询deployer可用充值余额不变
+                              锁定金额为   0 wei
+                              投票奖励金额变为 294000000000000 = 1960000000000000*0.3/2
