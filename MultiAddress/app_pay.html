@@ -1,0 +1,841 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>奥丁号应用DEMO</title>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+
+<style>
+/* App custom styles */
+* {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0 auto;
+	line-height: 1.7em;
+}
+
+h1 { font-size: 2em; font-weight: bold; }
+h2 { font-size: 1.5em; font-weight: bold; }
+h3 { font-size: 1.17em; font-weight: bold; }
+h5 { font-size: .83em; font-weight: bold; }
+h6 { font-size: .75em; font-weight: bold; }
+
+.logo {
+	background-image: url('https://ppkpub.org/logo.png');
+	background-repeat: no-repeat;
+	background-position: left top;
+	background-size: contain;
+	width: 210px;
+	text-align: center;
+}
+
+.content {
+	padding: 0;
+	margin-top: -2em;
+	width: 100%;
+}
+
+.footer {
+	background: #eee;
+	color: #000;
+	text-align: center;
+	padding: 1em;
+	font-size: 1em;
+}
+
+input {
+	border: 1px solid #ccc;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	border-radius: 4px;
+	font-size: 1em;
+	padding: 4px;
+	outline: 0;
+	-webkit-appearance: none;
+}
+
+.input-group input {
+	border-left: 0px;
+	border-top-left-radius: 0px;
+	border-bottom-left-radius: 0px;
+	-moz-border-top-left-radius: 0px;
+	-moz-border-bottom-left-radius: 0px;
+	-webkit-border-top-left-radius: 0px;
+	-webkit-border-bottom-left-radius: 0px;
+	display: block;
+}
+
+.input-group {
+	margin: 0 auto;
+	display: block-inline;
+	width: 1px;
+	margin-bottom: 1em;
+}
+
+.center {
+	margin: 1em auto;
+}
+
+</style>
+
+</head>
+
+<body>
+<nav class="navbar navbar-default" role="navigation">
+<div class="container-fluid">
+  <div class="navbar-header">
+    <a class="navbar-brand logo" href="./">应用示例</a>
+  </div>
+  <div id="bs-navbar-collapse-1">
+    <h2>奥丁号关联多币种转账</h2>
+  </div>  
+</div>
+</nav>
+
+<form class="form-horizontal">
+
+<div class="form-group">
+	<label for="dest_odin_uri" class="col-sm-2 control-label">收款人的奥丁号</label>
+	<div class="col-sm-10">
+	 <input type="text" class="form-control"  id="dest_odin_uri" value="ppk:106256*"  onChange="refreshDestInfo(false);" >
+     <input class="btn btn-info btn-sm" type="button" id="btn_refreshDestInfo" value="刷新关联钱包记录" onclick="refreshDestInfo(true);">
+     <font size="-2"> <a href="https://www.chainnode.com/post/434454" target="_blank">如何设置自己的奥丁号关联多个钱包地址?</a></font>
+     <br><span id="history_odins"></span>
+	</div>
+</div>
+
+<div class="form-group">
+	<label for="dest_wallet_list" class="col-sm-2 control-label">关联的多钱包地址</label>
+	<div class="col-sm-10">
+	 <select class="form-control"   id="dest_wallet_list" size=1 onchange="showQrCode();"></select>
+	</div>
+</div>
+
+<h3>使用钱包APP扫码转账</h3>
+
+<div class="form-group">
+	<label for="select_qrcode" class="col-sm-2 control-label"></label>
+	<div class="col-sm-10">
+	 <div id="select_qrcode" >
+     <center>
+     <input id="btn_gen_qr_code" type='button' class="btn btn-info btn-sm"  value='刷新收款二维码' onclick='showQrCode( );'    >
+     <div id="qrcode_img" ></div>
+     <font size="-2"><span id="scan_address">...</span></font><br>
+     <font size="-2">提示: <span id="scan_prompt"></span></font>
+     </center>
+     </div>
+	</div>
+</div>
+
+</form>
+
+<h3>使用浏览器钱包插件转账</h3>
+
+<div id="pluginform_bytom" style="display:none;">
+<form class="form-horizontal" >
+
+<div class="form-group">
+    <label for="dest_mov_address" class="col-sm-2 control-label">自动匹配的收款地址</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="dest_mov_address" value=""  readonly >
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="dest_mov_amount" class="col-sm-2 control-label">转账金额</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="dest_mov_amount" value=""   >
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label for="current_mov_chain_info" class="col-sm-2 control-label">转账币种</label>
+    <div class="col-sm-10">
+    <span id="current_mov_chain_info">比原MOV侧链币(ppk:joy/mov/)</span>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="current_mov_address" class="col-sm-2 control-label">转出钱包地址</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="current_mov_address" value=""   >
+    </div>
+</div>
+
+<p align="center"><input id="btn_use_mov_address" type='button' class="btn btn-warning"  value='使用比原MOV侧链转账' onclick='transByChain( document.getElementById("current_mov_address").value,document.getElementById("dest_mov_amount").value,"ppk:joy/mov/", document.getElementById("dest_mov_address").value  );'   disabled=true  ></p>
+
+</form>
+<hr>
+</div>
+
+
+
+<div id="pluginform_eth" style="display:none;">
+<form class="form-horizontal" >
+<input type="hidden" id="current_eth_chain_uri" value="">
+
+<div class="form-group">
+    <label for="dest_eth_address" class="col-sm-2 control-label">自动匹配的收款地址</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="dest_eth_address" value=""  readonly >
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="dest_eth_amount" class="col-sm-2 control-label">转账金额</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="dest_eth_amount" value=""   >
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="current_eth_chain_info" class="col-sm-2 control-label">转账币种</label>
+    <div class="col-sm-10">
+    <span id="current_eth_chain_info">...</span>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="current_eth_address" class="col-sm-2 control-label">转出钱包地址</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="current_eth_address" value=""   >
+    </div>
+</div>
+
+<p align="center"><input id="btn_use_eth_address"  type='button' class="btn btn-warning"  value='使用当前钱包地址转账' onclick='transByChain( document.getElementById("current_eth_address").value,document.getElementById("dest_eth_amount").value,document.getElementById("current_eth_chain_uri").value, document.getElementById("dest_eth_address").value  );' disabled=true ></p>
+</form>
+
+<hr>
+</div>
+
+
+<div id="pluginform_bch" style="display:none;">
+<form class="form-horizontal" >
+
+<div class="form-group">
+    <label for="dest_bch_address" class="col-sm-2 control-label">自动匹配的收款地址</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="dest_bch_address" value=""  readonly >
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label for="dest_bch_amount" class="col-sm-2 control-label">转账金额</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="dest_bch_amount" value=""   >
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="current_bch_chain_info" class="col-sm-2 control-label">转账币种</label>
+    <div class="col-sm-10">
+    <span id="current_bch_chain_info">比特现金BCH(ppk:bch/)</span>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="current_bch_address" class="col-sm-2 control-label">转出钱包地址</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="current_bch_address" value="" readonly  >
+    </div>
+</div>
+
+<p align="center"><input id="btn_use_bch_address" type='button' class="btn btn-warning"  value='使用比特现金BCH转账' onclick='transByChain( document.getElementById("current_bch_address").value,document.getElementById("dest_bch_amount").value,"ppk:joy/bch/", document.getElementById("dest_bch_address").value  );'   disabled=true  ></p>
+</form>
+
+<hr>
+</div>
+
+<p align="center"><font size="-2">提示: 使用插件转账功能，需要安装Metamask浏览器插件、或者使用内置插件支持的钱包APP(如BitPie/ImToken/TokenPocket/Bycoin)以及PPkBrowser安卓应用等。</font></p>
+
+<!--
+<textarea class="form-control"   id="debug_data" rows=5 readonly></textarea>
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    
+<!--<script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>-->
+<script src="https://cdn.bootcss.com/pako/1.0.6/pako.min.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/md5.min.js"></script>
+<script src="https://ppk001.sinaapp.com/ppk-lib2/js/0.1.1/common_func.js"></script>
+<script src="https://ppk001.sinaapp.com/ppk-lib2/js/0.1.1/ppk.js"></script>
+
+<script src="https://ppk001.sinaapp.com/ppk-lib2/js/common/qrcode.js"></script>
+
+<script type="text/javascript">
+const HISTORY_KEY="history-appdemo-pay-dest";
+const HISTORY_MAX_SIZE=3;
+const APPDEMO_MARK = "PPkAppDemo(http://tool.ppkpub.org/ap2/)";
+
+var mObjWallets;
+var mBoolLocalWalletEnabled=false;
+
+document.addEventListener('chromeBytomLoaded', bytomExtension => {
+	window.bytom.enable().then(accounts => {
+		initBytom();
+	  });  
+	initBytom();
+  });
+  
+
+window.onload=function(){
+    initPeerWeb();
+    initEthPlugin();
+    
+    var str_dest = getQueryString('to');
+    if(str_dest!=null && str_dest.length>0){
+        document.getElementById('dest_odin_uri').value = str_dest;
+    }
+    
+    refreshDestInfo(false);
+}
+
+  
+function getQueryString(name) {
+    let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    let r = window.location.search.substr(1).match(reg);
+    if (r != null) {
+        return decodeURIComponent(r[2]);
+    };
+    return null;
+}
+
+function refreshDestInfo(clear_cache){
+    mObjWallets = null;
+    document.getElementById("dest_wallet_list").options.length=0;
+    document.getElementById("dest_mov_address").value="";
+    document.getElementById("dest_eth_address").value="";
+    document.getElementById("dest_bch_address").value="";
+
+    document.getElementById('qrcode_img').innerHTML ="";
+    document.getElementById("scan_address").innerHTML = "...";
+    document.getElementById("scan_prompt").innerHTML = "请先从收款人关联的钱包地址列表中选择要转账的币种和对应地址";
+    
+    var str_dest = document.getElementById("dest_odin_uri").value.trim();
+    if(str_dest.length==0){
+        return;
+    }
+    
+    var dest_odin_uri=PPKLIB.formatPPkURI(str_dest,true);
+    
+    if(dest_odin_uri==null){
+        commonAlert("请输入有效的奥丁号标识(以ppk:起始)");
+        return;
+    }
+    
+    document.getElementById("dest_odin_uri").value = dest_odin_uri;
+
+    //更新输入历史
+    try{
+        var historyArray = getHistory();
+
+        var exist = historyArray.indexOf(dest_odin_uri);
+        if(exist<0){
+            historyArray.push(dest_odin_uri);
+        }
+        
+        if(historyArray.length>HISTORY_MAX_SIZE){
+            historyArray.splice(1, historyArray.length-HISTORY_MAX_SIZE);
+        }
+
+        
+        
+        saveLocalConfigData(HISTORY_KEY,JSON.stringify(historyArray));
+    } catch (error) {
+      console.error(error);
+    }
+    
+    showHistory();
+
+    //获取标识解析数据
+    if(clear_cache)
+        PPKLIB.deleteCache(str_dest);
+    
+    waitingButton("btn_refreshDestInfo");
+
+    PPKLIB.getPPkData(dest_odin_uri,myPPkDataCallback);
+
+}
+
+function myPPkDataCallback(status,result){
+    if('OK'==status){
+        obj_pttp_data = parseJsonObjFromAjaxResult(result);
+        
+        //document.getElementById("debug_data").value=JSON.stringify(obj_pttp_data);
+        var tmp_content = PPKLIB.getContentFromData(obj_pttp_data);
+        //document.getElementById("debug_data").value=tmp_str;
+        var obj_content = JSON.parse( tmp_content );
+        
+        if(typeof(obj_content) == 'undefined' || obj_content==null){
+            document.getElementById("dest_wallet_list").options.add(new Option("不存在的标识或者解析有误，请刷新下试试",""));
+        }else if(typeof(obj_content.x_wallets) == 'undefined'){
+            document.getElementById("dest_wallet_list").options.add(new Option("尚未设置",""));
+        }else{
+            mObjWallets = obj_content.x_wallets;
+            //document.getElementById("debug_data").value=JSON.stringify(mObjWallets);
+            
+            //document.getElementById("dest_wallet_list").options.add(new Option("请选择币种和地址生成转账二维码",""));
+            Object.keys(mObjWallets).forEach(function(tmp_chain_uri){
+                var tmp_wallet_set = mObjWallets[tmp_chain_uri];
+                var tmp_option = new Option("["+tmp_chain_uri+"] "+tmp_wallet_set['label']+" - "+tmp_wallet_set['address']
+                                            ,tmp_chain_uri);
+                document.getElementById("dest_wallet_list").options.add(tmp_option);
+                
+                if( tmp_chain_uri == document.getElementById("current_eth_chain_uri").value ){
+                    document.getElementById("dest_eth_address").value=tmp_wallet_set['address'];
+                }else if(tmp_chain_uri == "ppk:joy/mov/"){
+                    document.getElementById("dest_mov_address").value=tmp_wallet_set['address'];
+                }else if(tmp_chain_uri == "ppk:bch/"){
+                    document.getElementById("dest_bch_address").value=tmp_wallet_set['address'];
+                }
+            });
+            
+            showQrCode(  );
+        }
+        finishedButton("btn_refreshDestInfo");
+    }else{
+        enableButton("btn_refreshDestInfo","出错了，请重试");
+    }
+    
+    
+}
+
+function showQrCode(  ){
+    disableButton("btn_gen_qr_code","生成中...");
+    document.getElementById('qrcode_img').innerHTML ="";
+    document.getElementById("scan_address").innerHTML = "...";
+    document.getElementById("scan_prompt").innerHTML = "生成中...";
+    
+    var tmp_chain_uri = document.getElementById("dest_wallet_list").value;
+    console.log("selected: "+tmp_chain_uri);
+    
+    if( tmp_chain_uri==null || tmp_chain_uri.length==0 ){
+        //commonAlert("请选择一个有效的钱包地址进行转账！");
+        document.getElementById("scan_prompt").innerHTML = "请先从收款人关联的钱包地址列表中选择要转账的币种和对应地址";
+        enableButton("btn_gen_qr_code","请先选择要转账的币种和地址");
+        return;
+    }
+    
+    var tmp_wallet_set = mObjWallets[tmp_chain_uri];
+    
+    document.getElementById("scan_address").innerHTML = "收款币种: [" + tmp_chain_uri + "] "+tmp_wallet_set['label']+"<br>" + "收款地址: "+tmp_wallet_set['address'];
+    
+    var obj_req = {
+        "from_uri":"",
+        "to_uri":tmp_wallet_set['address'],
+        "asset_uri":"",
+        "amount_satoshi": 0,
+        "fee_satoshi":0,
+        "data":stringToHex(APPDEMO_MARK) 
+    };
+
+    var poll_url= tmp_chain_uri+ "qrCodeOfPay(" + stringToHex( JSON.stringify(obj_req) ) + ")";
+    console.log("poll_url: "+poll_url);
+    
+    //PPKLIB.deleteCache(poll_url);
+    
+    PPKLIB.getPPkData(poll_url,qrCodeCallback);
+    
+}
+
+function qrCodeCallback(status,result){
+    enableButton("btn_gen_qr_code","刷新收款二维码");
+    
+    if('OK'==status){
+        obj_pttp_data = parseJsonObjFromAjaxResult(result);
+        
+        //document.getElementById("debug_data").value=JSON.stringify(obj_pttp_data);
+        var tmp_content = PPKLIB.getContentFromData(obj_pttp_data);
+        //document.getElementById("debug_data").value=tmp_content;
+        var obj_content = JSON.parse( tmp_content );
+        
+        if(typeof(obj_content.qrcode) !== 'undefined'){
+            console.log("str_qr_code: "+obj_content.qrcode);
+            generateQrCodeImg(obj_content.qrcode);
+            
+            if(typeof(obj_content.prompt_cn) !== 'undefined')
+                str_scan_prompt=obj_content.prompt_cn;
+            else
+                str_scan_prompt=obj_content.prompt;
+            
+            document.getElementById("scan_prompt").innerHTML = str_scan_prompt;
+        }
+    }else{
+        document.getElementById("scan_prompt").innerHTML="出错了，请刷新重试";
+    }
+    
+}
+
+function generateQrCodeImg(str_qr_code){
+    var typeNumber = 0;
+    var errorCorrectionLevel = 'L';
+    var qr = qrcode(typeNumber, errorCorrectionLevel);
+    qr.addData(str_qr_code);
+    qr.make();
+    document.getElementById('qrcode_img').innerHTML = qr.createImgTag();
+}
+
+//检查PPk开放协议相关PeerWeb JS接口可用性
+function initPeerWeb(){
+    if(typeof(PeerWeb) !== 'undefined'){ 
+        console.log("PeerWeb enabled");
+		
+		mBoolLocalWalletEnabled = true ;
+		document.getElementById('pluginform_bch').style.display="";
+
+        PeerWeb.getDefaultAddress(
+                'ppk:bch/',  
+                'callback_setExtAssetNewAddress'  //回调方法名称
+            );
+    }
+}
+
+function callback_setExtAssetNewAddress(status,obj_data){
+    if('OK'==status){
+        if(obj_data.address!=null || obj_data.address.trim().length>0){
+            document.getElementById("current_bch_address").value=obj_data.address;
+            document.getElementById("btn_use_bch_address").disabled=false;
+        }
+    }
+}
+
+// Checking if ETH Plugin has been injected by the browser
+function initEthPlugin(){
+    if (typeof(window.web3) !== 'undefined' || typeof(window.ethereum) !== 'undefined') {
+        // Use Mist/MetaMask's provider
+        mBoolLocalWalletEnabled = true ;
+        document.getElementById('pluginform_eth').style.display="";
+        if (window.ethereum) { // Modern dapp browsers...
+            window.web3 = new Web3(window.ethereum);
+            window.ethereum.enable().then(accounts => {
+               window.accounts = accounts;
+               enabledETH();
+            })
+        } else if (window.web3) { // Legacy dapp browsers...
+            window.web3 = new Web3(web3.currentProvider);
+        }
+        
+    } else{
+         setEthChain(1); //允许手工输入以太坊地址登录后，用钱包APP扫码发送交易
+    }
+    
+    
+}
+function enabledETH(){
+    window.web3.eth.getAccounts(function (error, result) {
+        if (!error)
+          console.log(result)//授权成功后result能正常获取到地址了
+          document.getElementById("current_eth_address").value=result;
+          
+          if (typeof(window.web3.eth.getChainId) !== 'undefined' ){ //New version
+            window.web3.eth.getChainId((error, now_chain_id) => {
+              if (!error){
+                console.log("Current eth now_chain_id = "+now_chain_id);
+                setEthChain(now_chain_id);
+              }else{
+                setEthChain(-1);
+              }
+            });
+          }else if (typeof(window.web3.version.getNetwork) !== 'undefined' ){ //Old version
+            window.web3.version.getNetwork((error, netId) => {
+              if (!error){
+                console.log("Current eth netId = "+netId);
+                setEthChain( parseInt(netId) );
+              }else{
+                setEthChain(-1);
+              }
+            });
+          }else{
+            setEthChain(-1);
+          }
+    });
+
+    //reloading the page on chain or address changes
+    window.ethereum.on('chainChanged', (_chainId) => window.location.reload());
+    
+    window.ethereum.on('accountsChanged', function (accounts) {
+      window.location.reload();
+    });
+}
+
+function setEthChain(now_chain_id){
+    if(now_chain_id==1){
+        document.getElementById("current_eth_chain_uri").value = "ppk:joy/eth/";
+        document.getElementById("current_eth_chain_info").innerHTML = "以太坊主网币("+document.getElementById("current_eth_chain_uri").value+")";
+        
+    }else if(now_chain_id==4){
+        document.getElementById("current_eth_chain_uri").value = "ppk:joy/rinkeby/";
+        document.getElementById("current_eth_chain_info").innerHTML = "以太坊Rinkeby测试币("+document.getElementById("current_eth_chain_uri").value+")";
+    }else if(now_chain_id==56){
+        document.getElementById("current_eth_chain_uri").value = "ppk:joy/bsc/";
+        document.getElementById("current_eth_chain_info").innerHTML = "币安智能链BSC主网币("+document.getElementById("current_eth_chain_uri").value+")";
+    }else if(now_chain_id==97){
+        document.getElementById("current_eth_chain_uri").value = "ppk:joy/bsctest/";
+        document.getElementById("current_eth_chain_info").innerHTML = "币安BSC测试币("+document.getElementById("current_eth_chain_uri").value+")";
+    }else if(now_chain_id==-1){
+        document.getElementById("current_eth_chain_info").innerText="没有获得以太坊ETH、币安BSC等网络信息，请刷新试试！";
+        return;
+    }else{
+        document.getElementById("current_eth_chain_info").innerText="请切换到以太坊（主网或Rinkeby测试币）或者币安BSC（主网或测试币）！";
+        return;
+    } 
+    
+    document.getElementById("btn_use_eth_address").disabled=false;
+    refreshDestInfo(false);
+}
+
+function initBytom(){
+  
+  if(isNewBytomApi()){
+	  var currentChain = window.bytom.chain;
+	  
+	  if(currentChain=='vapor'){
+		  enabledBytom();
+	  }else{
+		  window.bytom.setChain('vapor').then(function (resp) {
+			if(resp.status=="success"){
+				enabledBytom();
+			}else{
+				commonAlert(resp.status);
+			}
+		  }).catch(function (err){
+			commonAlert(err)
+		  })
+	  }
+  }else{
+	  document.getElementById('btn_use_mov_address').value="请升级到比原钱包或插件的最新版本！";
+  }
+}
+
+function isNewBytomApi(){
+  return typeof(window.bytom) !== 'undefined' && typeof(window.bytom.version) !== 'undefined'   ;
+}   
+  
+function enabledBytom(){
+	mBoolLocalWalletEnabled=true;
+    
+    document.getElementById('pluginform_bytom').style.display="";
+	
+	currentAddress = window.bytom.defaultAccount.address;
+	
+	if(currentAddress.length>0){
+		document.getElementById("current_mov_address").value=currentAddress;
+        document.getElementById('btn_use_mov_address').disabled = false ;
+	}
+}
+
+function transByChain( from_wallet_address, trans_amount,dest_chain_uri, dest_wallet_address ){
+    if(dest_chain_uri.trim().length==0 || dest_wallet_address.trim().length==0){
+        commonAlert("请选择有效的币种和钱包地址！");
+        return;
+    }
+    
+    if(from_wallet_address.trim().length==0 ){
+        commonAlert("请选择有效的转出钱包地址！");
+        return;
+    }
+    
+    if( trans_amount=="" || trans_amount==0 ){
+        commonAlert("请输入有效的转账金额！");
+        return;
+    }
+    
+	if(dest_chain_uri=="ppk:joy/mov/"){
+		transByBytomMOV(from_wallet_address, trans_amount, dest_wallet_address);
+	}else if(dest_chain_uri=="ppk:joy/eth/"){
+        transByETH(1,"以太坊主网币",from_wallet_address, trans_amount, dest_wallet_address);
+    }else if( dest_chain_uri=="ppk:joy/rinkeby/" ){
+        transByETH(4,"以太坊Rinkeby测试币",from_wallet_address, trans_amount, dest_wallet_address);
+    }else if( dest_chain_uri=="ppk:joy/bsc/" ){
+        transByETH(56,"币安智能链BSC",from_wallet_address, trans_amount, dest_wallet_address);
+    }else if( dest_chain_uri=="ppk:joy/bsctest/" ){
+        transByETH(97,"币安BSC测试币",from_wallet_address, trans_amount, dest_wallet_address);
+	}else if(dest_chain_uri=="ppk:joy/bch/" ){
+		transByBCH(from_wallet_address, trans_amount, dest_wallet_address);
+	}else if(dest_chain_uri==""){
+		commonAlert("请先选择要使用的区块链");
+	}else{
+		commonAlert("不支持的链("+dest_chain_uri+")");
+	}
+}
+  
+function transByETH(dest_chain_id,dest_chain_info,from_wallet_address, trans_amount, dest_wallet_address){
+    disableButton( "btn_use_eth_address","正在生成交易，请稍候..." );
+
+    var transactionObject = {
+          from: from_wallet_address,
+          to: dest_wallet_address,
+          value: changeEthToWei(trans_amount),
+          gas:  "35000",
+          gasPrice: "30000000000",
+          //nonce: 0,
+          data:  "0x"+stringToHex(APPDEMO_MARK)
+        };
+
+    web3.eth.sendTransaction(transactionObject, (err, hash) => {
+      if (!err) { disableButton( "btn_use_eth_address", "已发出区块链交易到"+dest_chain_info ); }
+      else { commonAlert(err); enableButton( "btn_use_eth_address"," 重  试 " );  }
+    });
+}
+  
+function transByBCH(from_wallet_address, trans_amount, dest_wallet_address){
+	if(typeof(PeerWeb) == 'undefined'){ //检查PPk开放协议相关PeerWeb JS接口可用性
+        console.log("PeerWeb not enabled");
+		commonAlert("请安装PPkBrowser安卓版应用来发送BCH交易！\nPlease use PPkBrowser.");
+		return;
+    }
+
+	var tx_argus_json='{"source":"'+from_wallet_address             //交易发送者地址
+					 +'","destination":"'+dest_wallet_address                 //交易接收者地址
+					 +'","data_hex":"'+ stringToHex(APPDEMO_MARK) //备注信息
+					 +'","amount_satoshi":'+trans_amount*100000000 //转账金额,单位satoshi
+					 +',"fee_satoshi":1000}';    //给矿工的费用,单位satoshi
+	
+    disableButton("btn_use_bch_address", "正在处理，请稍候..." );
+
+	PeerWeb.getSignedTX(
+		'ppk:bch/',
+		stringToHex(tx_argus_json),  //待生成交易的参数数据
+		'callback_getExtAssetSignedTX'
+	  );
+
+}
+  
+function callback_getExtAssetSignedTX(status,obj_data){
+    if('OK'==status){
+        var asset_uri='ppk:bch/';
+    
+        //调用PeerWeb接口发送已签名的比特币交易
+        PeerWeb.sendSignedTX(
+                asset_uri,
+                dest_wallet_address,  //交易发送者地址
+                obj_data.signed_tx_hex,  //已签名的比特币交易数据，HEX格式
+                'callback_sendExtAssetTX' //回调方法 
+            );
+    }else{
+        if('CANCELED'!=status){
+            commonAlert("发送到比特现金链的交易失败!\n(status="+status+")\n请确认当前的地址有足够余额.");
+        }
+        enableButton("btn_use_bch_address"," 重  试 ");
+    }
+}
+  
+function callback_sendExtAssetTX(status,obj_data){
+    if('OK'==status){
+        disableButton("btn_use_bch_address","已发出比特现金BCH交易!");
+    }else{
+        commonAlert("发送比特现金BCH交易失败!\n(status="+status+")\n网络服务可能有异常，请稍后再试.");
+        enableButton("btn_use_bch_address"," 重  试 ");
+    }
+}
+  
+function isNewBytomApi(){
+      return typeof(window.bytom) !== 'undefined' && typeof(window.bytom.version) !== 'undefined'   ;
+}    
+
+function transByBytomMOV(from_wallet_address, trans_amount, dest_wallet_address){
+	if(!isNewBytomApi()){
+        commonAlert("请安装并升级到比原钱包或插件的最新版本！\nPlease install&update your Bycoin or Byone.");
+		return;
+    }
+	
+	var currentChain = window.bytom.chain;
+		  
+    if(currentChain!='vapor'){
+	  window.bytom.setChain('vapor').then(function (resp) {
+		if(resp.status=="success"){
+			sendBytomMovTX(from_wallet_address, trans_amount,dest_wallet_address);
+		}else{
+			commonAlert(resp.status);
+		}
+	  }).catch(function (err){
+		commonAlert(err)
+	  })
+    }
+	
+	sendBytomMovTX(from_wallet_address, trans_amount, dest_wallet_address);
+}
+  
+function sendBytomMovTX(from_wallet_address, trans_amount,dest_wallet_address){
+	current_address = window.bytom.defaultAccount.address;
+    //commonAlert("sendBytomMovTX:"+dest_wallet_address);
+	
+	if( current_address != from_wallet_address ){
+		commonAlert("请使用正确的钱包地址来发送交易！\nPlease use the correct account.");
+		return;
+	}
+    
+    disableButton("btn_use_mov_address", "正在处理，请稍候..." );
+	
+    var params = {
+     input:[
+      {"amount":trans_amount,"asset":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","type":"spend_wallet"}
+      ],
+     output:[
+      {"amount":trans_amount,"asset":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","address":dest_wallet_address,"type":"control_address"}
+      ],
+     gas:"0.001"
+    };
+
+	window.bytom.sendAdvancedTransaction(params).then(function (resp) {
+		//commonAlert(resp);
+        disableButton("btn_use_mov_address", "已发出比原MOV交易!" );
+	  }).catch(function (err){
+		commonAlert(err);
+        enableButton("btn_use_mov_address", " 重  试 " );
+	  })
+}
+
+function updatePnsURI(dest_chain_uri, dest_wallet_address ){
+    document.getElementById("onchain_pns_uri").value=dest_chain_uri+dest_wallet_address+"/";
+}
+
+
+
+function showHistory( ){
+    var historyArray=getHistory();
+    //myAlert(historyArray);
+    if(historyArray.length==0)
+        return;
+    
+    str_html="<strong>最近的收款人</strong>: ";
+    for(kk=historyArray.length-1;kk>=0;kk--){
+        str_html += "<a  class='btn btn-default btn-xs' role='button'  onclick='useHistory(\""+historyArray[kk]+"\")'>"+historyArray[kk]+"</a> "
+    }
+    document.getElementById('history_odins').innerHTML=str_html;
+}
+
+function useHistory(str_old_odin){
+    document.getElementById('dest_odin_uri').value = str_old_odin ;
+    refreshDestInfo();
+}
+
+function getHistory( ){
+    try {
+        var historyStr=getLocalConfigData(HISTORY_KEY);
+        //myAlert(historyStr);
+        if(historyStr==null){
+            return new Array();
+        }else{
+            return JSON.parse(historyStr);
+        }
+    } catch (error) {
+      console.error(error);
+      return new Array();
+    }
+}
+
+
+</script>
+
+
+
